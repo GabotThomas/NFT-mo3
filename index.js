@@ -58,8 +58,7 @@ async function useFetch({
     const params = {
         method,
         headers: {
-            'Content-Type': JSON_TYPE,
-            Authorization: 'Bearer ' + token
+            'Content-Type': JSON_TYPE
         },
         body: JSON.stringify(body),
     };
