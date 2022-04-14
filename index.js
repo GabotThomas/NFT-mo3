@@ -228,12 +228,21 @@ function index() {
                         className: "",
                         text: `par <a href="">${nft.collection.slug}</a>`
                     }, nftElement)
-                    const likeButton =createElement('img', {
-                        className: "",
-                        attributes:[{key:'src',value:'assets/like.png'}]
+                    // const likeButton =createElement('img', {
+                    //     className: "",
+                    //     attributes:[{key:'src',value:'assets/like.png'}]
                         
-                    }, nftElement);
-                    likeButton.addEventListener("click",(e)=>{
+                    // }, nftElement);
+                    const divicon = createElement('div', {
+                        className: "extra content"
+                    }, nftElement)
+                    const aicon = createElement('a', {
+                        text: "add favoris"
+                    }, divicon)
+                    const icon = createElement('i', {
+                        className: "heart icon"
+                    }, aicon)
+                    divicon.addEventListener("click",(e)=>{
                         if(!imageLiked.includes(nft)){
                             imageLiked.push(nft);
                             localStorage.setItem('favoris',JSON.stringify(imageLiked));
@@ -343,12 +352,21 @@ function index() {
                             className: "",
                             text: `par <a href="">${nft.collection.slug}</a>`
                         }, nftElement)
-                        const likeButton =createElement('img', {
-                            className: "",
-                            attributes:[{key:'src',value:'assets/like.png'}]
+                        // const likeButton =createElement('img', {
+                        //     className: "",
+                        //     attributes:[{key:'src',value:'assets/like.png'}]
                             
-                        }, nftElement);
-                        likeButton.addEventListener("click",(e)=>{
+                        // }, nftElement);
+                        const divicon = createElement('div', {
+                            className: "extra content"
+                        }, nftElement)
+                        const aicon = createElement('a', {
+                            text: "add favoris"
+                        }, divicon)
+                        const icon = createElement('i', {
+                            className: "heart icon"
+                        }, aicon)
+                        divicon.addEventListener("click",(e)=>{
                             if(!imageLiked.includes(nft)){
                                 imageLiked.push(nft);
                                 localStorage.setItem('favoris',JSON.stringify(imageLiked));
@@ -454,12 +472,13 @@ function index() {
                             className: "",
                             text: `par <a href="">${nft.collection.slug}</a>`
                         }, nftElement)
-                        const likeButton =createElement('img', {
-                            className: "",
-                            attributes:[{key:'src',value:'assets/like.png'}]
+                        // const likeButton =createElement('img', {
+                        //     className: "",
+                        //     attributes:[{key:'src',value:'assets/like.png'}]
                             
-                        }, nftElement);
-                        likeButton.addEventListener("click",(e)=>{
+                        // }, nftElement);
+                        
+                        aicon.addEventListener("click",(e)=>{
                             if(!imageLiked.includes(nft)){
                                 imageLiked.push(nft);
                                 localStorage.setItem('favoris',JSON.stringify(imageLiked));
