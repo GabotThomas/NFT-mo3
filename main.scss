@@ -1,3 +1,7 @@
+
+html{
+    scroll-behavior: smooth;
+}
 img{
     width: 100%;
     transition: filter 0.5s;
@@ -60,6 +64,7 @@ main{
 
     .img-center{
         z-index: 1;
+        width: 100%;
     }
     img {
         object-fit: cover;
