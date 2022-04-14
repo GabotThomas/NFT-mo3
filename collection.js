@@ -101,21 +101,19 @@ function index() {
     //Code
     const textHeader = `<ul></ul>`;
     const header = createElement('header', { className: "header" }, root);
+
     const main = createElement('main', { className: "container" }, root);
 
     //components
 
-    const assets = () => {
+    const collections = () => {
 
         //Const & let
-        const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+        const rootUrl = 'https://awesome-nft-app.herokuapp.com/collections';
         let nfts = [];
 
         //Components
-        const link = createElement('a', { attributes:[{ key: 'href', value: 'collection.html' },
-        ],text: 'lien' }, header);
-        const container = createElement('div', { className: "container list" }, main, true);
-        
+        const container = createElement('div', { className: "container list" }, main, true)
         const loading = createElement('div', { className: "ui loader active" }, container, true);
         const list = createElement('div', { className: 'grid' })
         const separate = createElement('div', { className: "separate" })
@@ -125,20 +123,12 @@ function index() {
         const margin = (nbr - 1) * 40 / nbr;
         const columnSize = Math.floor((width / nbr) - 1 - margin);
 
-
-
-
-        link.addEventListener("click", function() {
-            window.location.href="collection.html"
-          });
-
-
-
         const execute = (request) => {
             useFetch(request).then((data) => {
+                console.log(data)
                 if (data) {
                     console.log(data);
-                    nfts = nfts.concat(data.assets);
+                    nfts = nfts.concat(data.collections);
                     if (loading) {
                         loading.remove();
                         container.appendChild(list);
@@ -174,17 +164,19 @@ function index() {
         execute({ url: rootUrl });
 
         const listRender = (nftList) => {
+            console.log(nftList)
             //For each NFTS
-            nftList.assets.forEach(nft => {
+            nftList.collections.forEach(nft => {
                 if (nft.image_url) {
                     const nftElement = createElement('div', {
-                        className: "column",
+                        className: "column ui card",
                         attributes: [{
                             key: "style", value: `width:${columnSize}px`
                         }]
                     }, list)
                     //Create Img with lazyLoading
                     const imgContainer = createElement('div', {
+                        className: "image",
                         attributes: [{
                             key: "style",
                             value: `height:${columnSize}px`
@@ -194,6 +186,15 @@ function index() {
                     const imgCenter = createElement('div', {
                         className: "img-center"
                     }, imgContainer)
+                    const divicon = createElement('div', {
+                        className: "extra content"
+                    }, nftElement)
+                    const aicon = createElement('a', {
+                        text: "add favoris"
+                    }, divicon)
+                    const icon = createElement('i', {
+                        className: "heart icon"
+                    }, aicon)
                     const img = createImg(nft.image_url, imgCenter);
                     const name = createElement('p', {
                         className: "",
@@ -207,9 +208,11 @@ function index() {
                 separate.setAttribute("data-url", nftList.next)
                 preLoading.observe(separate);
             }
+            
         }
+        
     }
-    assets();
+    collections();
 }
 
 index();
