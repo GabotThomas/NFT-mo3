@@ -1,27 +1,20 @@
 const JSON_TYPE = 'application/json';
 const root = document.querySelector('body');
-let token = localStorage.getItem("token");
+//let token = localStorage.getItem("token");
 
-//Prompt
-const initToken = (string) => {
-    while (!token) {
-        token = prompt(string);
-        if (token) {
-            localStorage.setItem("token", token);
-            index();
-        }
-    }
-    if (token) {
-        index();
-    }
-}
-
-initToken('Token:');
-
-
-
-
-
+// //Prompt
+// const initToken = (string) => {
+//     while (!token) {
+//         token = prompt(string);
+//         if (token) {
+//             localStorage.setItem("token", token);
+//             index();
+//         }
+//     }
+//     if (token) {
+//         index();
+//     }
+// }
 
 //functions 
 function createElement(tag, config, parent = null, replace = false) {
@@ -82,18 +75,9 @@ async function useFetch({
 async function fetching(url, params) {
     try {
         const response = await fetch(url, params);
-
-        if (response.headers.get('Content-Type') === JSON_TYPE) {
-            const responseJson = await response.json();
-            if (response.ok) {
-                return responseJson;
-            } else {
-                token = null;
-                console.log('test')
-                initToken("Votre token n'est plus valable");
-            }
-
-        }
+        //API HEROKU
+        const responseGood = await response.json();
+        return responseGood;
     }
 
     catch (e) {
@@ -126,7 +110,7 @@ function index() {
     const assets = () => {
 
         //Const & let
-        const rootUrl = 'https://api.m3o.com/v1/nft/Assets';
+        const rootUrl = 'https://awesome-nft-app.herokuapp.com';
         let nfts = [];
 
         //Components
@@ -143,6 +127,7 @@ function index() {
         const execute = (request) => {
             useFetch(request).then((data) => {
                 if (data) {
+                    console.log(data);
                     nfts = nfts.concat(data.assets);
                     if (loading) {
                         loading.remove();
@@ -170,11 +155,7 @@ function index() {
                 if (element.isIntersecting) {
                     const section = element.target;
                     execute({
-                        url: rootUrl,
-                        method: 'POST',
-                        body: {
-                            cursor: section.getAttribute("data-url")
-                        }
+                        url: rootUrl + '/?page' + section.getAttribute("data-url"),
                     });
                 }
             });
@@ -208,10 +189,6 @@ function index() {
                         className: "",
                         text: nft.name
                     }, nftElement)
-                    const creator = createElement('p', {
-                        className: "",
-                        text: `par <a href="">${nft.collection.slug}</a>`
-                    }, nftElement)
                     //Observe with scroll
                     lazyLoading.observe(img);
                 }
@@ -222,9 +199,11 @@ function index() {
             }
         }
     }
-
     assets();
 }
+
+index();
+//initToken('Token:');
 
 
 
