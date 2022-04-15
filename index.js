@@ -101,6 +101,32 @@ function index() {
     const textHeader = `<ul></ul>`;
     const header = createElement('header', { className: "header" }, root);
 
+    //Navbar
+    const nav = createElement('div', {
+        className: 'navbar',
+        attributes: [{
+            key: "style",
+            value: "height:100px; width:100%"
+        }]
+    }, header)
+    const ul = createElement('ul', {
+        className: 'nav-list',
+        attributes: ''
+    }, nav)
+    const homeLi = createElement('li', {
+        className: 'nav-text',
+        attributes: ''
+    }, ul)
+    const home = createElement('a', {
+        className: 'text',
+        text: 'Home',
+        // href: '/NFT-mo3/index.html',
+        attributes: [{
+            key: 'href',
+            value: '/NFT-mo3/index.html'
+        }]
+    }, homeLi)
+
     const main = createElement('main', { className: "container" }, root);
 
     //components
@@ -218,7 +244,7 @@ function index() {
         const margin = (nbr - 1) * 40 / nbr;
         const columnSize = Math.floor((width / nbr) - 1 - margin);
 
-        back.innerHTML = "test"
+        back.innerHTML = "Back"
 
         const execute = (request) => {
             useFetch(request).then((data) => {
@@ -309,11 +335,8 @@ function index() {
         }
 
         execute({ url: rootUrl + "/nft/" + id })
-        // back.addEventListener('click', e => {
-        //     back.href = window.location.replace("http://127.0.0.1:5500/NFT-mo3/")
-        // })
 
-        console.log(window.location)
+        // back.href = window.history.back(-15)
     }
 
     assets();
