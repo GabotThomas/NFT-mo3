@@ -110,26 +110,48 @@ function index() {
 
         //Const & let
         const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+        let search = false;
         let nfts = [];
 
         //Components
         const container = createElement('div', { className: "container list" }, main, true)
-        const loading = createElement('div', { className: "ui loader active" }, container, true);
+        const loading = createElement('div', { className: "ui loader active" });
         const list = createElement('div', { className: 'grid' })
         const separate = createElement('div', { className: "separate" })
+
+        //Form
+        const searchForm = createElement('input', {
+            className: "form",
+        }, document.querySelector('header'));
+
+        searchForm.addEventListener("input", (e) => {
+            handleLoading();
+            search = true;
+            execute({
+                url: rootUrl + '/search?q=' + e.target.value,
+            }, true);
+        })
+
 
         const width = Math.floor(container.offsetWidth);
         const nbr = Math.floor(width / 350);
         const margin = (nbr - 1) * 40 / nbr;
         const columnSize = Math.floor((width / nbr) - 1 - margin);
 
-        const execute = (request) => {
+        const handleLoading = () => {
+            container.replaceChildren(loading);
+        }
+
+        const execute = (request, replace = false) => {
             useFetch(request).then((data) => {
                 if (data) {
-                    console.log(data);
                     nfts = nfts.concat(data.assets);
                     if (loading) {
                         loading.remove();
+                        if (replace) {
+                            list.innerHTML = "";
+
+                        }
                         container.appendChild(list);
                         container.appendChild(separate);
                     }
@@ -153,13 +175,17 @@ function index() {
             elements.forEach((element) => {
                 if (element.isIntersecting) {
                     const section = element.target;
-                    execute({
-                        url: rootUrl + '/?page' + section.getAttribute("data-url"),
-                    });
+                    if (!search) {
+                        execute({
+                            url: rootUrl + '/?page' + section.getAttribute("data-url"),
+                        });
+                    }
+
                 }
             });
         }, { rootMargin: "500px" });
 
+        handleLoading();
         execute({ url: rootUrl });
 
         const listRender = (nftList) => {
