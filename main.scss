@@ -1,8 +1,8 @@
-
-html{
+html {
     scroll-behavior: smooth;
 }
-img{
+
+img {
     width: 100%;
     transition: filter 0.5s;
     -webkit-transition: 0.5s -webkit-filter linear;
@@ -12,32 +12,38 @@ img{
     -o-transition: 0.5s -o-filter linear;
     transition: 0.5s filter linear, 0.5s -webkit-filter linear;
 }
-img.lazy-loading{
+
+img.lazy-loading {
     filter: blur(40px);
 }
 
-.header{
+.header {
     width: 100%;
-    ul{
+
+    ul {
         display: flex;
         list-style: none;
-        li{
+
+        li {
             padding: 20px;
         }
     }
 }
-main{
-    .container{
+
+main {
+    .container {
         width: 95%;
         margin: 0 auto;
     }
-    .grid{
+
+    .grid {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 40px;
         overflow: hidden;
-        .column{
+
+        .column {
             display: flex;
             flex-direction: column;
         }
@@ -53,22 +59,23 @@ main{
     display: flex;
     align-items: center;
     position: relative;
-    &:before{
-        content:'';
+
+    &:before {
+        content: '';
         filter: blur(40px);
-        width:100%;
+        width: 100%;
         height: 100%;
         position: absolute;
         backdrop-filter: blur(50px);
     }
 
-    .img-center{
+    .img-center {
         z-index: 1;
         width: 100%;
+        cursor: pointer;
     }
+
     img {
         object-fit: cover;
     }
 }
-
-
