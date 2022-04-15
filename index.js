@@ -96,7 +96,6 @@ function createImg(url, parent, props = {}) {
 
 }
 
-
 function index() {
     //Code
     const textHeader = `<ul></ul>`;
@@ -126,7 +125,6 @@ function index() {
         const execute = (request) => {
             useFetch(request).then((data) => {
                 if (data) {
-                    console.log(data);
                     nfts = nfts.concat(data.assets);
                     if (loading) {
                         loading.remove();
@@ -154,7 +152,7 @@ function index() {
                 if (element.isIntersecting) {
                     const section = element.target;
                     execute({
-                        url: rootUrl + '/?page' + section.getAttribute("data-url"),
+                        url: rootUrl + '/?page=' + section.getAttribute("data-url"),
                     });
                 }
             });
@@ -181,9 +179,12 @@ function index() {
                         className: "crop"
                     }, nftElement)
                     const imgCenter = createElement('div', {
-                        className: "img-center"
+                        className: "img-center",
                     }, imgContainer)
                     const img = createImg(nft.image_url, imgCenter);
+                    img.addEventListener('click', (e) => {
+                        asset(nft.id);
+                    })
                     const name = createElement('p', {
                         className: "",
                         text: nft.name
@@ -198,6 +199,123 @@ function index() {
             }
         }
     }
+
+    const asset = (id) => {
+        // console.log(id)
+
+        const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+        history.pushState({}, null, "nft/" + id)
+        let nfts = [];
+
+        //Components
+        const container = createElement('div', { className: "container item" }, main, true)
+        const loading = createElement('div', { className: "ui loader active" }, container, true);
+        const item = createElement('div', { className: 'flex' })
+        const back = createElement('a', { className: "back" }, container)
+
+        const width = Math.floor(container.offsetWidth);
+        const nbr = Math.floor(width / 350);
+        const margin = (nbr - 1) * 40 / nbr;
+        const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+        back.innerHTML = "test"
+
+        const execute = (request) => {
+            useFetch(request).then((data) => {
+                if (data) {
+                    nfts = nfts.concat(data.assets);
+                    if (loading) {
+                        loading.remove();
+                        container.appendChild(item);
+                    }
+
+                    listRender(data);
+                }
+            })
+        }
+
+        const lazyLoading = new IntersectionObserver((elements) => {
+            elements.forEach((element) => {
+                if (element.isIntersecting) {
+                    const img = element.target;
+                    img.src = img.dataset.src || img.src;
+                    img.classList.remove("lazy-loading");
+                    lazyLoading.unobserve(img);
+                }
+            });
+        });
+
+        const preLoading = new IntersectionObserver((elements) => {
+            elements.forEach((element) => {
+                if (element.isIntersecting) {
+                    const section = element.target;
+                    execute({
+                        url: rootUrl,
+                        method: 'POST',
+                        body: {
+                            cursor: section.getAttribute("data-url")
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: "500px" });
+
+        const listRender = (nft) => {
+            //For each NFTS
+
+            console.log(nft)
+            if (nft) {
+                const nftElement = createElement('div', {
+                    className: "column",
+                    attributes: [{
+                        key: "style", value: `width:${columnSize}px`
+                    }]
+                }, item)
+                //Create Img with lazyLoading
+                const imgContainer = createElement('div', {
+                    attributes: [{
+                        key: "style",
+                        value: `height:${columnSize}px;background-image:url(${nft.image_url})`
+                    }],
+                    className: "crop"
+                }, nftElement)
+                const imgCenter = createElement('div', {
+                    className: "img-center"
+                }, imgContainer)
+                const img = createImg(nft.image_url, imgCenter);
+                const name = createElement('p', {
+                    className: "",
+                    text: "<span>NFT name: </span>" + nft.name
+                }, nftElement)
+                const creator = createElement('p', {
+                    className: "",
+                    text: `par <a href="">${nft.collection.name}</a>`
+                }, nftElement)
+                const description = createElement('p', {
+                    className: "",
+                    text: `Description de la Collection:<br><p>${nft.collection.description}</p>`
+                }, nftElement)
+                const contractAdress = createElement('p', {
+                    className: "",
+                    text: `Contrat adress <p>${nft.contract.address}</p>`
+                }, nftElement)
+                const sales = createElement('p', {
+                    className: "",
+                    text: `Ventes : <p>${nft.sales}</p>`
+                }, nftElement)
+                //Observe with scroll
+                lazyLoading.observe(img);
+            }
+        }
+
+        execute({ url: rootUrl + "/nft/" + id })
+        // back.addEventListener('click', e => {
+        //     back.href = window.location.replace("http://127.0.0.1:5500/NFT-mo3/")
+        // })
+
+        console.log(window.location)
+    }
+
     assets();
 }
 
