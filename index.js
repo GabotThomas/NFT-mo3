@@ -1,7 +1,6 @@
 const JSON_TYPE = 'application/json';
 const root = document.querySelector('body');
 let token = localStorage.getItem("token");
-let imageLiked = []
 
 let page = 'Derniers NFT'
 
