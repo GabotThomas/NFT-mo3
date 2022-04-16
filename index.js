@@ -130,6 +130,7 @@ function removeFeature(index){
     let arr = JSON.parse(localStorage.getItem("favoris"));
     arr.splice(index,1);
     localStorage.setItem('favoris',JSON.stringify(arr));
+    document.getElementsByClassName("li")[2].click()
 }
 
 
