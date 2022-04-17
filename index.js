@@ -1,34 +1,412 @@
 const JSON_TYPE = 'application/json';
 const root = document.querySelector('body');
-let token = localStorage.getItem("token");
+const main = createElement('main', { className: "container" });
 
-let page = 'Derniers NFT'
+//Routing
+let nftRoute = [
+    route({ url: '/:id', component: asset })
+]
+
+let routes = [
+    route({ url: '/', component: assets }),
+    route({ url: '/nft', component: routing, routes: nftRoute }),
+    route({ url: '/favoris', component: favoris })
+]
+index();
 
 
-//Prompt
-const initToken = (string) => {
-    while (!token) {
-        token = prompt(string);
-        if (token) {
-            localStorage.setItem("token", token);
-            index();
-        }
+function index() {
+    //Code
+    const header = createElement('header', { className: "header" }, root);
+
+    //Navbar
+    const nav = createElement('div', {
+        className: 'navbar',
+        attributes: [{
+            key: "style",
+            value: "height:100px; width:100%"
+        }]
+    }, header)
+    const ul = createElement('ul', {
+        className: 'nav-list',
+        attributes: ''
+    }, nav)
+    const homeLi = createElement('li', {
+        className: 'nav-text',
+        attributes: ''
+    }, ul)
+    const home = createElement('a', {
+        className: 'text',
+        text: 'Home',
+        // href: '/NFT-mo3/index.html',
+        attributes: [{
+            key: 'href',
+            value: ''
+        }]
+    }, homeLi)
+    const favorisLi = createElement('li', {
+        className: 'nav-text',
+    }, ul)
+    const favoris = createElement('a', {
+        className: 'text',
+        text: 'Favoris',
+        // href: '/NFT-mo3/index.html',
+        attributes: [{
+            key: 'href',
+            value: '/favoris'
+        }]
+    }, homeLi)
+    root.appendChild(main)
+
+    //InitRouting
+    let url = new URL(window.location.href);
+    link({ to: url.pathname });
+}
+
+
+
+
+
+
+//Component
+
+function assets() {
+
+    //Const & let
+    const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+    let search = false;
+    let nfts = [];
+
+    //Components
+    const container = createElement('div', { className: "container list" }, main, true)
+    const loading = createElement('div', { className: "ui loader active" });
+    const list = createElement('div', { className: 'grid' })
+    const separate = createElement('div', { className: "separate" })
+
+    //Form
+    const searchForm = createElement('input', {
+        className: "form",
+    }, document.querySelector('header'), true);
+
+    searchForm.addEventListener("input", (e) => {
+        handleLoading();
+        search = true;
+        execute({
+            url: rootUrl + '/search?q=' + e.target.value,
+        }, true);
+    })
+
+
+    const width = Math.floor(container.offsetWidth);
+    const nbr = Math.floor(width / 350);
+    const margin = (nbr - 1) * 40 / nbr;
+    const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+    const handleLoading = () => {
+        container.replaceChildren(loading);
     }
-    if (token) {
-        index();
+
+    const execute = (request, replace = false) => {
+        useFetch(request).then((data) => {
+            if (data) {
+                nfts = nfts.concat(data.assets);
+                if (loading) {
+                    loading.remove();
+                    if (replace) {
+                        list.innerHTML = "";
+
+                    }
+                    container.appendChild(list);
+                    container.appendChild(separate);
+                }
+                listRender(data);
+            }
+        })
+    }
+
+    const lazyLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const img = element.target;
+                img.src = img.dataset.src || img.src;
+                img.classList.remove("lazy-loading");
+                lazyLoading.unobserve(img);
+            }
+        });
+    });
+
+    const preLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const section = element.target;
+                if (!search) {
+                    execute({
+                        url: rootUrl + '/?page' + section.getAttribute("data-url"),
+                    });
+                }
+
+            }
+        });
+    }, { rootMargin: "500px" });
+
+    handleLoading();
+    execute({ url: rootUrl });
+
+    const listRender = (nftList) => {
+        //For each NFTS
+        nftList.assets.forEach(nft => {
+            if (nft.image_url) {
+                const nftElement = createElement('div', {
+                    className: "column",
+                    attributes: [{
+                        key: "style", value: `width:${columnSize}px`
+                    }]
+                }, list)
+                //Create Img with lazyLoading
+                const imgContainer = createElement('div', {
+                    attributes: [{
+                        key: "style",
+                        value: `height:${columnSize}px`
+                    }],
+                    className: "crop"
+                }, nftElement)
+                const imgCenter = createElement('div', {
+                    className: "img-center",
+                }, imgContainer)
+                const img = createImg(nft.image_url, imgCenter);
+                img.addEventListener('click', (e) => {
+                    link({ to: '/nft/' + nft.id });
+                })
+                const name = createElement('p', {
+                    className: "",
+                    text: nft.name
+                }, nftElement)
+                //Observe with scroll
+                lazyLoading.observe(img);
+            }
+        })
+        if (nftList.next) {
+            separate.setAttribute("data-url", nftList.next)
+            preLoading.observe(separate);
+        }
     }
 }
 
-initToken('Token:');
+function asset({ id }) {
+    // console.log(id)
+    console.log(id)
+    const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+    //history.pushState({}, null, "nft/" + id)
+    let nfts = [];
 
+    //Components
+    const container = createElement('div', { className: "container item" }, main, true)
+    const loading = createElement('div', { className: "ui loader active" }, container, true);
+    const item = createElement('div', { className: 'flex' })
+    const back = createElement('div', { className: "back", text: 'back' }, container)
+    back.addEventListener('click', () => {
+        link({ to: '/' });
+    })
 
+    const width = Math.floor(container.offsetWidth);
+    const nbr = Math.floor(width / 350);
+    const margin = (nbr - 1) * 40 / nbr;
+    const columnSize = Math.floor((width / nbr) - 1 - margin);
 
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            if (data) {
+                nfts = nfts.concat(data.assets);
+                if (loading) {
+                    loading.remove();
+                    container.appendChild(item);
+                }
 
+                listRender(data);
+            }
+        })
+    }
 
+    const lazyLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const img = element.target;
+                img.src = img.dataset.src || img.src;
+                img.classList.remove("lazy-loading");
+                lazyLoading.unobserve(img);
+            }
+        });
+    });
 
-//functions 
+    const preLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const section = element.target;
+                execute({
+                    url: rootUrl,
+                    method: 'POST',
+                    body: {
+                        cursor: section.getAttribute("data-url")
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "500px" });
+
+    const listRender = (nft) => {
+        //For each NFTS
+
+        console.log(nft)
+        if (nft) {
+            const nftElement = createElement('div', {
+                className: "column",
+                attributes: [{
+                    key: "style", value: `width:${columnSize}px`
+                }]
+            }, item)
+            //Create Img with lazyLoading
+            const imgContainer = createElement('div', {
+                attributes: [{
+                    key: "style",
+                    value: `height:${columnSize}px;background-image:url(${nft.image_url})`
+                }],
+                className: "crop"
+            }, nftElement)
+            const imgCenter = createElement('div', {
+                className: "img-center"
+            }, imgContainer)
+            const img = createImg(nft.image_url, imgCenter);
+            const name = createElement('p', {
+                className: "",
+                text: "<span>NFT name: </span>" + nft.name
+            }, nftElement)
+            const creator = createElement('p', {
+                className: "",
+                text: `par <a href="">${nft.collection.name}</a>`
+            }, nftElement)
+            const description = createElement('p', {
+                className: "",
+                text: `Description de la Collection:<br><p>${nft.collection.description}</p>`
+            }, nftElement)
+            const contractAdress = createElement('p', {
+                className: "",
+                text: `Contrat adress <p>${nft.contract.address}</p>`
+            }, nftElement)
+            const sales = createElement('p', {
+                className: "",
+                text: `Ventes : <p>${nft.sales}</p>`
+            }, nftElement)
+            //Observe with scroll
+            lazyLoading.observe(img);
+        }
+    }
+
+    execute({ url: rootUrl + "/nft/" + id })
+
+}
+
+function favoris() {
+    //Const & let
+    const rootUrl = 'https://api.m3o.com/v1/nft/Assets';
+    let nfts = [];
+
+    //Components
+    const container = createElement('div', { className: "container list" }, main, true)
+    const loading = createElement('div', { className: "ui loader active" }, container, true);
+    const list = createElement('div', { className: 'grid' })
+    const separate = createElement('div', { className: "separate" })
+
+    const width = Math.floor(container.offsetWidth);
+    const nbr = Math.floor(width / 350);
+    const margin = (nbr - 1) * 40 / nbr;
+    const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+    const lazyLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const img = element.target;
+                img.src = img.dataset.src || img.src;
+                img.classList.remove("lazy-loading");
+                lazyLoading.unobserve(img);
+            }
+        });
+    });
+
+    const preLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const section = element.target;
+                execute({
+                    url: rootUrl,
+                    method: 'POST',
+                    body: {
+                        cursor: section.getAttribute("data-url")
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "500px" });
+
+    const listRender = (nftList) => {
+        //For each NFTS
+        if (loading) {
+            loading.remove();
+            container.appendChild(list);
+            container.appendChild(separate);
+        }
+        JSON.parse(nftList).forEach((nft, index) => {
+            if (nft.image_url) {
+                const nftElement = createElement('div', {
+                    className: "column ui card",
+                    attributes: [{
+                        key: "style", value: `width:${columnSize}px`
+                    }]
+                }, list)
+                //Create Img with lazyLoading
+                const imgContainer = createElement('div', {
+                    className: '',
+                    attributes: [{
+                        key: "style",
+                        value: `height:${columnSize}px`
+                    }],
+                    className: "crop"
+                }, nftElement)
+                const imgCenter = createElement('div', {
+                    className: "img-center"
+                }, imgContainer)
+                const img = createImg(nft.image_url, imgCenter);
+                const name = createElement('p', {
+                    className: "",
+                    text: nft.name
+                }, nftElement)
+                const creator = createElement('p', {
+                    className: "",
+                    text: `par <a href="">${nft.collection.slug}</a>`
+                }, nftElement)
+                const likeButton = createElement('img', {
+                    className: "imgLike",
+                    attributes: [{ key: 'src', value: 'assets/like.png', }]
+
+                }, nftElement);
+                likeButton.addEventListener("click", () => removeFeature(index));
+
+                //Observe with scroll
+                lazyLoading.observe(img);
+            }
+        })
+        if (nftList.next) {
+            separate.setAttribute("data-url", nftList.next)
+            preLoading.observe(separate);
+        }
+    }
+
+    listRender(localStorage.getItem('favoris'));
+}
+
+//Function create
+
 function createElement(tag, config, parent = null, replace = false) {
-    const { text, color, className, attributes} = config || {};
+    const { text, color, className, attributes } = config || {};
 
     const element = document.createElement(tag);
 
@@ -60,6 +438,20 @@ function createElement(tag, config, parent = null, replace = false) {
     }
     return element;
 }
+
+function createImg(url, parent, props = {}) {
+    return createElement('img', {
+        attributes: [
+            { key: 'src', value: 'https://i.ibb.co/nbvWJW9/image-placeholder-for-lazy-loading.png' },
+            { key: 'data-src', value: url },
+        ],
+        className: "lazy-loading",
+        ...props
+    }, parent)
+
+}
+
+//Function fetch API
 
 async function useFetch({
     url,
@@ -104,190 +496,67 @@ async function fetching(url, params) {
     }
 }
 
-function createImg(url, parent, props = {}) {
-    return createElement('img', {
-        attributes: [
-            { key: 'src', value: 'https://i.ibb.co/nbvWJW9/image-placeholder-for-lazy-loading.png' },
-            { key: 'data-src', value: url },
-        ],
-        className: "lazy-loading",
-        ...props
-    }, parent)
-
-}
-
-function addFeature(nft){
+function addFeature(nft) {
     let arr = JSON.parse(localStorage.getItem("favoris"));
-    if(!arr.includes(nft)){
+    if (!arr.includes(nft)) {
         arr.push(nft);
     }
-    localStorage.setItem('favoris',JSON.stringify(arr));
+    localStorage.setItem('favoris', JSON.stringify(arr));
     alert("image ajoutée aux favoris");
 }
 
-function removeFeature(index){
+function removeFeature(index) {
     let arr = JSON.parse(localStorage.getItem("favoris"));
-    arr.splice(index,1);
-    localStorage.setItem('favoris',JSON.stringify(arr));
+    arr.splice(index, 1);
+    localStorage.setItem('favoris', JSON.stringify(arr));
     document.getElementsByClassName("li")[2].click()
 }
 
-
+/*
 function index() {
     //Code
     const textHeader = `<ul></ul>`;
-    const header = createElement('header', { className: "header"}, root);
-    const main = createElement('main', { className: "container"}, root);
+    const header = createElement('header', { className: "header" }, root);
+    const main = createElement('main', { className: "container" }, root);
 
-    const ul = createElement('ul', { className: "ul"}, header);
-    const li1 = createElement('li', { className: "li", 
-    text : "Derniers NFT",
+    const ul = createElement('ul', { className: "ul" }, header);
+    const li1 = createElement('li', {
+        className: "li",
+        text: "Derniers NFT",
     }, ul);
-    
-    const li2 = createElement('li', { className: "li" ,
-    text : "Collection",
+
+    const li2 = createElement('li', {
+        className: "li",
+        text: "Collection",
     }, ul);
-   
-    const li3 = createElement('li', { className: "li" ,
-    text : "Favoris",
+
+    const li3 = createElement('li', {
+        className: "li",
+        text: "Favoris",
     }, ul);
-    
+
 
     //components
 
-
-    // const assets = () => {
-        
-    //     //Const & let
-    //     const rootUrl = 'https://api.m3o.com/v1/nft/Assets';
-    //     let nfts = [];
-
-    //     //Components
-    //     const container = createElement('div', { className: "container list" }, main, true)
-    //     const loading = createElement('div', { className: "ui loader active" }, container, true);
-    //     const list = createElement('div', { className: 'grid' })
-    //     const separate = createElement('div', { className: "separate" })
-
-    //     const width = Math.floor(container.offsetWidth);
-    //     const nbr = Math.floor(width / 350);
-    //     const margin = (nbr - 1) * 40 / nbr;
-    //     const columnSize = Math.floor((width / nbr) - 1 - margin);
-
-    //     const execute = (request) => {
-    //         useFetch(request).then((data) => {
-    //             if (data) {
-    //                 nfts = nfts.concat(data.assets);
-    //                 if (loading) {
-    //                     loading.remove();
-    //                     container.appendChild(list);
-    //                     container.appendChild(separate);
-    //                 }
-    //                listRender(data);
-    //             }
-    //         })
-    //     }
-
-    //     const lazyLoading = new IntersectionObserver((elements) => {
-    //         elements.forEach((element) => {
-    //             if (element.isIntersecting) {
-    //                 const img = element.target;
-    //                 img.src = img.dataset.src || img.src;
-    //                 img.classList.remove("lazy-loading");
-    //                 lazyLoading.unobserve(img);
-    //             }
-    //         });
-    //     });
-
-    //     const preLoading = new IntersectionObserver((elements) => {
-    //         elements.forEach((element) => {
-    //             if (element.isIntersecting) {
-    //                 const section = element.target;
-    //                 execute({
-    //                     url: rootUrl,
-    //                     method: 'POST',
-    //                     body: {
-    //                         cursor: section.getAttribute("data-url")
-    //                     }
-    //                 });
-    //             }
-    //         });
-    //     }, { rootMargin: "500px" });
-
-    //     execute({ url: rootUrl });
-
-    //     const listRender = (nftList) => {
-    //         //For each NFTS
-    //         nftList.assets.forEach(nft => {
-    //             if (nft.image_url) {
-    //                 const nftElement = createElement('div', {
-    //                     className: "column",
-    //                     attributes: [{
-    //                         key: "style", value: `width:${columnSize}px`
-    //                     }]
-    //                 }, list)
-    //                 //Create Img with lazyLoading
-    //                 const imgContainer = createElement('div', {
-    //                     attributes: [{
-    //                         key: "style",
-    //                         value: `height:${columnSize}px`
-    //                     }],
-    //                     className: "crop"
-    //                 }, nftElement)
-    //                 const imgCenter = createElement('div', {
-    //                     className: "img-center"
-    //                 }, imgContainer)
-    //                 const img = createImg(nft.image_url, imgCenter);
-    //                 const name = createElement('p', {
-    //                     className: "",
-    //                     text: nft.name
-    //                 }, nftElement)
-    //                 const creator = createElement('p', {
-    //                     className: "",
-    //                     text: `par <a href="">${nft.collection.slug}</a>`
-    //                 }, nftElement)
-    //                 const likeButton =createElement('img', {
-    //                     className: "",
-    //                     attributes:[{key:'src',value:'assets/like.png'}]
-                        
-    //                 }, nftElement);
-    //                 likeButton.addEventListener("click",(e)=>{
-    //                     if(!imageLiked.includes(nft)){
-    //                         imageLiked.push(nft);
-    //                         localStorage.setItem('favoris',JSON.stringify(imageLiked));
-    //                         alert("image ajoutée aux favoris");
-    //                     }
-    //                 })
-                    
-    //                 //Observe with scroll
-    //                 lazyLoading.observe(img);
-    //             }
-    //         })
-    //         if (nftList.next) {
-    //             separate.setAttribute("data-url", nftList.next)
-    //             preLoading.observe(separate);
-    //         }
-    //     }
-    // }
-    // assets();
-    li1.addEventListener("click",(e)=>{
+    li1.addEventListener("click", (e) => {
         page = "Derniers NFT";
         const assets = () => {
-        
+
             //Const & let
             const rootUrl = 'https://api.m3o.com/v1/nft/Assets';
             let nfts = [];
-    
+
             //Components
             const container = createElement('div', { className: "container list" }, main, true)
             const loading = createElement('div', { className: "ui loader active" }, container, true);
             const list = createElement('div', { className: 'grid' })
             const separate = createElement('div', { className: "separate" })
-    
+
             const width = Math.floor(container.offsetWidth);
             const nbr = Math.floor(width / 350);
             const margin = (nbr - 1) * 40 / nbr;
             const columnSize = Math.floor((width / nbr) - 1 - margin);
-    
+
             const execute = (request) => {
                 useFetch(request).then((data) => {
                     if (data) {
@@ -297,11 +566,11 @@ function index() {
                             container.appendChild(list);
                             container.appendChild(separate);
                         }
-                       listRender(data);
+                        listRender(data);
                     }
                 })
             }
-    
+
             const lazyLoading = new IntersectionObserver((elements) => {
                 elements.forEach((element) => {
                     if (element.isIntersecting) {
@@ -312,7 +581,7 @@ function index() {
                     }
                 });
             });
-    
+
             const preLoading = new IntersectionObserver((elements) => {
                 elements.forEach((element) => {
                     if (element.isIntersecting) {
@@ -327,9 +596,9 @@ function index() {
                     }
                 });
             }, { rootMargin: "500px" });
-    
+
             execute({ url: rootUrl });
-    
+
             const listRender = (nftList) => {
                 //For each NFTS
                 nftList.assets.forEach(nft => {
@@ -360,12 +629,12 @@ function index() {
                             className: "",
                             text: `par <a href="">${nft.collection.slug}</a>`
                         }, nftElement)
-                        const likeButton =createElement('div', {
+                        const likeButton = createElement('div', {
                             className: "extra content",
                             text: `<a><i class="heart icon"></i>favoris</a>`
                         }, nftElement);
-                        likeButton.addEventListener("click",() => addFeature(nft));
-                        
+                        likeButton.addEventListener("click", () => addFeature(nft));
+
                         //Observe with scroll
                         lazyLoading.observe(img);
                     }
@@ -380,117 +649,94 @@ function index() {
 
     });
 
-    li2.addEventListener("click",(e)=>{
-        page = "Collection"; 
+    li2.addEventListener("click", (e) => {
+        page = "Collection";
     });
-    
-    li3.addEventListener("click",(e)=>{
-        page = "Favoris"; 
-        const favoris = () => {
-        
-            //Const & let
-            const rootUrl = 'https://api.m3o.com/v1/nft/Assets';
-            let nfts = [];
-    
-            //Components
-            const container = createElement('div', { className: "container list" }, main, true)
-            const loading = createElement('div', { className: "ui loader active" }, container, true);
-            const list = createElement('div', { className: 'grid' })
-            const separate = createElement('div', { className: "separate" })
-    
-            const width = Math.floor(container.offsetWidth);
-            const nbr = Math.floor(width / 350);
-            const margin = (nbr - 1) * 40 / nbr;
-            const columnSize = Math.floor((width / nbr) - 1 - margin);
-    
-            const lazyLoading = new IntersectionObserver((elements) => {
-                elements.forEach((element) => {
-                    if (element.isIntersecting) {
-                        const img = element.target;
-                        img.src = img.dataset.src || img.src;
-                        img.classList.remove("lazy-loading");
-                        lazyLoading.unobserve(img);
-                    }
-                });
-            });
-    
-            const preLoading = new IntersectionObserver((elements) => {
-                elements.forEach((element) => {
-                    if (element.isIntersecting) {
-                        const section = element.target;
-                        execute({
-                            url: rootUrl,
-                            method: 'POST',
-                            body: {
-                                cursor: section.getAttribute("data-url")
-                            }
-                        });
-                    }
-                });
-            }, { rootMargin: "500px" });
-    
-            const listRender = (nftList) => {
-                //For each NFTS
-                if (loading) {
-                    loading.remove();
-                    container.appendChild(list);
-                    container.appendChild(separate);
-                }
-                JSON.parse(nftList).forEach((nft,index) => {
-                    if (nft.image_url) {
-                        const nftElement = createElement('div', {
-                            className: "column ui card",
-                            attributes: [{
-                                key: "style", value: `width:${columnSize}px`
-                            }]
-                        }, list)
-                        //Create Img with lazyLoading
-                        const imgContainer = createElement('div', {
-                            className: '',
-                            attributes: [{
-                                key: "style",
-                                value: `height:${columnSize}px`
-                            }],
-                            className: "crop"
-                        }, nftElement)
-                        const imgCenter = createElement('div', {
-                            className: "img-center"
-                        }, imgContainer)
-                        const img = createImg(nft.image_url, imgCenter);
-                        const name = createElement('p', {
-                            className: "",
-                            text: nft.name
-                        }, nftElement)
-                        const creator = createElement('p', {
-                            className: "",
-                            text: `par <a href="">${nft.collection.slug}</a>`
-                        }, nftElement)
-                        const likeButton =createElement('img', {
-                            className: "imgLike",
-                            attributes:[{key:'src',value:'assets/like.png',}]
-                            
-                        }, nftElement);
-                        likeButton.addEventListener("click",() => removeFeature(index));
-                        
-                        //Observe with scroll
-                        lazyLoading.observe(img);
-                    }
-                })
-                if (nftList.next) {
-                    separate.setAttribute("data-url", nftList.next)
-                    preLoading.observe(separate);
-                }
-            }
-            
-            listRender(localStorage.getItem('favoris'));
-        }
+
+    li3.addEventListener("click", (e) => {
+        page = "Favoris";
+
         favoris();
     });
 }
+*/
 
+//Routing
 
+function link({ to }) {
+    routing({ pathname: to })
+}
 
+function route({ url, component, routes = null }) {
+    if (routes) {
+        return {
+            url, routing: ({ pathname, nextPathname }) => {
+                component({ pathname: nextPathname, baseRoute: routes, prevUrl: pathname })
+            }
+        }
+    }
+    return {
+        url, action: ({ pathname, ...props }) => {
+            history.pushState({}, null, pathname)
+            component({ ...props });
+        }
+    }
+}
 
+function routing({ pathname, baseRoute = routes, prevUrl = null }) {
+    const result = [];
+    const pathnameSplit = pathname.slice(1).split('/');
+    if (pathname != '/') {
+        const mathPow = (Math.pow(2, pathnameSplit.length));
+        let matriceIndex = (mathPow) / 2;
+        pathnameSplit.forEach((path, index) => {
+            let insert = true;
+            for (let j = 0; j < mathPow; j++) {
+                if (!(j % matriceIndex) && j != 0) {
+                    insert = !insert;
+                }
+                if (index === 0) {
+                    result.push([insert ? ('/' + path) : '/&'])
+                } else {
+                    result[j].push('/' + (insert ? path : '&'));
+                }
+            }
+            matriceIndex = matriceIndex / 2
+        });
 
+    } else {
+        result.push(['/'])
+        result[0].push('/&')
+    }
 
+    const props = {};
+    for (const [index, path] of result.entries()) {
+        const currentUrl = baseRoute.find(route => {
+            const routeSplit = route.url.split('/');
+            const universalRoute = routeSplit.map(el => el[0] == ':' ? '&' : el).join('/');
+            if (universalRoute == path.slice(0, routeSplit.length - 1).join('')) {
+                props.nextPathname = '/' + pathnameSplit.slice(routeSplit.length - 1).join('/');
+                path.forEach((el, i) => {
+                    if (el == '/&') {
+                        if (routeSplit[i + 1]) {
+                            props[routeSplit[i + 1].slice(1)] = pathnameSplit[i];
+                        }
+                    }
+                })
+                return true;
+            }
+
+        })
+        console.log(prevUrl)
+        if (currentUrl) {
+            if (currentUrl.routing) {
+                currentUrl.routing({ pathname: pathname.slice(1), ...props })
+                break;
+            }
+
+            currentUrl.action({ pathname: (prevUrl || pathname), ...props });
+            break;
+        };
+    }
+}
 
