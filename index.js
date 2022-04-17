@@ -41,21 +41,17 @@ function index() {
         // href: '/NFT-mo3/index.html',
         attributes: [{
             key: 'href',
-            value: ''
+            value: '/'
         }]
     }, homeLi)
     const favorisLi = createElement('li', {
         className: 'nav-text',
+        text: 'Favoris'
     }, ul)
-    const favoris = createElement('a', {
-        className: 'text',
-        text: 'Favoris',
-        // href: '/NFT-mo3/index.html',
-        attributes: [{
-            key: 'href',
-            value: '/favoris'
-        }]
-    }, homeLi)
+    favorisLi.addEventListener('click', (e) => {
+        link({ to: '/favoris' })
+    })
+
     root.appendChild(main)
 
     //InitRouting
@@ -181,6 +177,12 @@ function assets() {
                     className: "",
                     text: nft.name
                 }, nftElement)
+
+                const likeButton = createElement('div', {
+                    className: "extra content",
+                    text: `<a><i class="heart icon"></i>favoris</a>`
+                }, nftElement);
+                likeButton.addEventListener("click", () => addFeature(nft));
                 //Observe with scroll
                 lazyLoading.observe(img);
             }
@@ -238,25 +240,8 @@ function asset({ id }) {
         });
     });
 
-    const preLoading = new IntersectionObserver((elements) => {
-        elements.forEach((element) => {
-            if (element.isIntersecting) {
-                const section = element.target;
-                execute({
-                    url: rootUrl,
-                    method: 'POST',
-                    body: {
-                        cursor: section.getAttribute("data-url")
-                    }
-                });
-            }
-        });
-    }, { rootMargin: "500px" });
-
     const listRender = (nft) => {
         //For each NFTS
-
-        console.log(nft)
         if (nft) {
             const nftElement = createElement('div', {
                 className: "column",
@@ -388,7 +373,10 @@ function favoris() {
                     attributes: [{ key: 'src', value: 'assets/like.png', }]
 
                 }, nftElement);
-                likeButton.addEventListener("click", () => removeFeature(index));
+                likeButton.addEventListener("click", (e) => {
+                    nftElement.remove();
+                    removeFeature(index);
+                });
 
                 //Observe with scroll
                 lazyLoading.observe(img);
@@ -399,7 +387,6 @@ function favoris() {
             preLoading.observe(separate);
         }
     }
-
     listRender(localStorage.getItem('favoris'));
 }
 
@@ -451,6 +438,10 @@ function createImg(url, parent, props = {}) {
 
 }
 
+function removeElement(parent, children) {
+
+}
+
 //Function fetch API
 
 async function useFetch({
@@ -461,8 +452,7 @@ async function useFetch({
     const params = {
         method,
         headers: {
-            'Content-Type': JSON_TYPE,
-            Authorization: 'Bearer ' + token
+            'Content-Type': JSON_TYPE
         },
         body: JSON.stringify(body),
     };
@@ -478,19 +468,11 @@ async function useFetch({
 async function fetching(url, params) {
     try {
         const response = await fetch(url, params);
-
-        if (response.headers.get('Content-Type') === JSON_TYPE) {
-            const responseJson = await response.json();
-            if (response.ok) {
-                return responseJson;
-            } else {
-                token = null;
-                console.log('test')
-                initToken("Votre token n'est plus valable");
-            }
-
-        }
+        //API HEROKU
+        const responseGood = await response.json();
+        return responseGood;
     }
+
     catch (e) {
         console.error(e)
     }
@@ -498,10 +480,14 @@ async function fetching(url, params) {
 
 function addFeature(nft) {
     let arr = JSON.parse(localStorage.getItem("favoris"));
-    if (!arr.includes(nft)) {
+    console.log(arr)
+    if (arr && !arr.includes(nft)) {
         arr.push(nft);
+        localStorage.setItem('favoris', JSON.stringify(arr));
+    } else {
+        localStorage.setItem('favoris', JSON.stringify([nft]));
     }
-    localStorage.setItem('favoris', JSON.stringify(arr));
+
     alert("image ajoutée aux favoris");
 }
 
