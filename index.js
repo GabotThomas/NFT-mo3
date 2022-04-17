@@ -57,6 +57,7 @@ function index() {
     //InitRouting
     let url = new URL(window.location.href);
     link({ to: url.pathname });
+
 }
 
 
@@ -65,6 +66,40 @@ function index() {
 
 
 //Component
+function creatorSelect({ parent, handleSelect }) {
+    const url = 'https://awesome-nft-app.herokuapp.com/creators';
+
+    const creatorForm = createElement('select', {
+        className: "form",
+    }, parent);
+    creatorForm.addEventListener("input", (e) => {
+        handleSelect('/creators/' + e.target.value)
+    })
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            console.log(data)
+            data.creators.forEach(creator => {
+                if (creator.username) {
+                    const optionCreator = createElement('option', {
+                        className: "select",
+                        text: creator.username
+                    }, creatorForm);
+                }
+            })
+        })
+    }
+    execute({ url });
+}
+
+function searchNft({ parent, handleSearch }) {
+    const searchForm = createElement('input', {
+        className: "form",
+    }, parent);
+    searchForm.addEventListener("input", (e) => {
+        handleSearch('/search?q=' + e.target.value)
+    })
+}
 
 function assets() {
 
@@ -73,30 +108,28 @@ function assets() {
     let search = false;
     let nfts = [];
 
-    //Components
+    //Elements
     const container = createElement('div', { className: "container list" }, main, true)
     const loading = createElement('div', { className: "ui loader active" });
     const list = createElement('div', { className: 'grid' })
     const separate = createElement('div', { className: "separate" })
-
-    //Form
-    const searchForm = createElement('input', {
-        className: "form",
+    const searchContainer = createElement('div', {
     }, document.querySelector('header'), true);
 
-    searchForm.addEventListener("input", (e) => {
-        handleLoading();
-        search = true;
-        execute({
-            url: rootUrl + '/search?q=' + e.target.value,
-        }, true);
-    })
-
-
+    //With of card
     const width = Math.floor(container.offsetWidth);
     const nbr = Math.floor(width / 350);
     const margin = (nbr - 1) * 40 / nbr;
     const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+    //Form
+    const handleForm = (pathname) => {
+        handleLoading();
+        search = true;
+        execute({
+            url: rootUrl + pathname,
+        }, true);
+    }
 
     const handleLoading = () => {
         container.replaceChildren(loading);
@@ -105,11 +138,14 @@ function assets() {
     const execute = (request, replace = false) => {
         useFetch(request).then((data) => {
             if (data) {
-                nfts = nfts.concat(data.assets);
+                nfts = nfts.concat(data);
                 if (loading) {
                     loading.remove();
                     if (replace) {
                         list.innerHTML = "";
+                        if (search && !data.assets.length) {
+                            nfts = []
+                        }
 
                     }
                     container.appendChild(list);
@@ -140,15 +176,15 @@ function assets() {
                         url: rootUrl + '/?page' + section.getAttribute("data-url"),
                     });
                 }
-
             }
         });
     }, { rootMargin: "500px" });
 
-    handleLoading();
-    execute({ url: rootUrl });
-
     const listRender = (nftList) => {
+        console.log(nfts)
+        if (!nfts.length) {
+            container.replaceChildren('null')
+        }
         //For each NFTS
         nftList.assets.forEach(nft => {
             if (nft.image_url) {
@@ -192,6 +228,19 @@ function assets() {
             preLoading.observe(separate);
         }
     }
+
+    //Components
+    handleLoading();
+    creatorSelect({
+        parent: searchContainer,
+        handleSelect: handleForm
+    });
+
+    searchNft({
+        parent: searchContainer,
+        handleSearch: handleForm
+    });
+    execute({ url: rootUrl });
 }
 
 function asset({ id }) {
@@ -438,10 +487,6 @@ function createImg(url, parent, props = {}) {
 
 }
 
-function removeElement(parent, children) {
-
-}
-
 //Function fetch API
 
 async function useFetch({
@@ -503,14 +548,14 @@ function removeFeature(index) {
 //Routing
 
 function link({ to }) {
-    routing({ pathname: to })
+    routing({ pathnameGiven: to })
 }
 
 function route({ url, component, routes = null }) {
     if (routes) {
         return {
             url, routing: ({ pathname, nextPathname }) => {
-                component({ pathname: nextPathname, baseRoute: routes, prevUrl: pathname })
+                component({ pathnameGiven: nextPathname, declaredRoutes: routes, prevUrl: pathname })
             }
         }
     }
@@ -522,58 +567,86 @@ function route({ url, component, routes = null }) {
     }
 }
 
-function routing({ pathname, baseRoute = routes, prevUrl = null }) {
-    const result = [];
-    const pathnameSplit = pathname.slice(1).split('/');
-    if (pathname != '/') {
+function routing({ pathnameGiven, declaredRoutes = routes, prevUrl = null }) {
+    //Exemple with : /nft/150256/details
+    const matricePathname = [];
+    //Exemple with : [nft,150256,details]
+    const pathnameSplit = pathnameGiven.slice(1).split('/');
+    if (pathnameGiven != '/') {
+        //8 -> 2^length
         const mathPow = (Math.pow(2, pathnameSplit.length));
+        //create matrice with index
         let matriceIndex = (mathPow) / 2;
-        pathnameSplit.forEach((path, index) => {
+        // Desired result : 
+        // ['/nft', '/150256', '/details']
+        // ['/nft', '/150256', '/&']
+        // ['/nft', '/&', '/details']
+        // ['/nft', '/&', '/&']
+        // ['/&', '/150256', '/details']
+        // ['/&', '/150256', '/&']
+        // ['/&', '/&', '/details']
+        // ['/&', '/&', '/&']
+        //
+        //& represents variables
+        //create an order of priority
+        pathnameSplit.forEach((pathname, index) => {
             let insert = true;
             for (let j = 0; j < mathPow; j++) {
                 if (!(j % matriceIndex) && j != 0) {
                     insert = !insert;
                 }
                 if (index === 0) {
-                    result.push([insert ? ('/' + path) : '/&'])
+                    matricePathname.push([insert ? ('/' + pathname) : '/&'])
                 } else {
-                    result[j].push('/' + (insert ? path : '&'));
+                    matricePathname[j].push('/' + (insert ? pathname : '&'));
                 }
             }
             matriceIndex = matriceIndex / 2
         });
-
     } else {
-        result.push(['/'])
-        result[0].push('/&')
+        matricePathname.push(['/'])
+        matricePathname[0].push('/&')
     }
-
+    //init props with return in component
     const props = {};
-    for (const [index, path] of result.entries()) {
-        const currentUrl = baseRoute.find(route => {
-            const routeSplit = route.url.split('/');
-            const universalRoute = routeSplit.map(el => el[0] == ':' ? '&' : el).join('/');
-            if (universalRoute == path.slice(0, routeSplit.length - 1).join('')) {
-                props.nextPathname = '/' + pathnameSplit.slice(routeSplit.length - 1).join('/');
-                path.forEach((el, i) => {
+    for (const [index, pathname] of matricePathname.entries()) {
+        //compare currentUrl with the declared routes
+        const routeIfExist = declaredRoutes.find(declaredRoute => {
+            //ex: route declared /nft/:id/details
+            //result : ['',nft,:id,details]
+            const declaredRouteSplit = declaredRoute.url.split('/');
+            //universal:[/nft/&/details]
+            const universalRoute = declaredRouteSplit.map(el => el[0] == ':' ? '&' : el).join('/');
+            //compare universal '/nft/&/details', path => line in matrice
+            if (universalRoute == pathname.slice(0, declaredRouteSplit.length - 1).join('')) {
+                //recover the rest of the url for multi-routing
+                props.nextPathname = '/' +
+                    pathnameSplit.slice(declaredRouteSplit.length - 1).join('/');
+                pathname.forEach((el, i) => {
+                    //if variable in URL
                     if (el == '/&') {
-                        if (routeSplit[i + 1]) {
-                            props[routeSplit[i + 1].slice(1)] = pathnameSplit[i];
+                        //routeSplit ['',nft,:id,details]
+                        if (declaredRouteSplit[i + 1]) {
+                            //recover :id => props.id = 150256;
+                            props[declaredRouteSplit[i + 1].slice(1)] = pathnameSplit[i];
                         }
                     }
                 })
+                //url is found
                 return true;
             }
 
         })
-        console.log(prevUrl)
-        if (currentUrl) {
-            if (currentUrl.routing) {
-                currentUrl.routing({ pathname: pathname.slice(1), ...props })
+
+        if (routeIfExist) {
+            //next-routing
+            if (routeIfExist.routing) {
+                //global pathname nft/150256/details, with props.nextUrl
+                routeIfExist.routing({ pathname: pathnameGiven.slice(1), ...props })
                 break;
             }
-
-            currentUrl.action({ pathname: (prevUrl || pathname), ...props });
+            //run components with({id}) and change URL in page
+            routeIfExist.action({ pathname: (prevUrl || pathnameGiven), ...props });
             break;
         };
     }
