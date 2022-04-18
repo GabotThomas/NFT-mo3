@@ -78,6 +78,20 @@ function creatorSelect({ parent, handleSelect }) {
     return creatorForm;
 }
 
+function salesSelect({ parent, handleClick }) {
+    const url = 'https://awesome-nft-app.herokuapp.com/';
+
+    const sales = createElement('button', {
+        className: 'sales',
+        text: 'sales'
+    }, parent)
+    sales.addEventListener('click', (e) => {
+        handleClick('?sales=true')
+    })
+
+    return sales;
+}
+
 // Problème au niveau API
 function ownerSelect({ parent, handleSelect }) {
     const url = 'https://awesome-nft-app.herokuapp.com/owners';
@@ -228,6 +242,11 @@ function assets() {
                     className: "",
                     text: nft.name
                 }, nftElement)
+                const sales = createElement('p', {
+                    className: "",
+                    text: nft.sales
+                }, nftElement)
+                console.log(nft)
 
                 const likeButton = createElement('div', {
                     className: "extra content",
@@ -262,6 +281,11 @@ function assets() {
         parent: searchContainer,
         handleSearch: handleForm
     });
+
+    salesSelect({
+        parent: searchContainer,
+        handleClick: handleForm
+    })
 
     //Components
     handleLoading();
