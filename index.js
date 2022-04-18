@@ -8,13 +8,21 @@ let historyPushAvailable = window.location.origin.slice(0, 4) != 'file';
 let nftRoute = [
     //: /nft
     route({ url: '/:id', component: asset })
+    
 ]
+
+let collectionRoute = [
+    route({ url: '/', component: collections }),
+    route({ url: '/:slug', component: collection })
+    
+]
+
 
 let routes = [
     route({ url: '/', component: assets }),
     route({ url: '/nft', component: routing, routes: nftRoute }),
     route({ url: '/favoris', component: favoris }),
-    route({ url: '/collections', component: collections })
+    route({ url: '/collections', component: routing, routes: collectionRoute })
 ]
 index();
 
@@ -465,6 +473,107 @@ function favoris() {
     listRender(localStorage.getItem('favoris'));
 }
 
+function collection({ slug }) {
+    // console.log(id)
+    const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+    //history.pushState({}, null, "nft/" + id)
+    let nfts = [];
+
+    //Components
+    const container = createElement('div', { className: "container list" }, main, true)
+    const loading = createElement('div', { className: "ui loader active" });
+    const list = createElement('div', { className: 'grid' })
+    const separate = createElement('div', { className: "separate" })
+    const item = createElement('div', { className: 'flex' })
+    const back = createElement('div', { className: "back", text: 'back' }, container)
+    back.addEventListener('click', () => {
+        link({ to: '/' });
+    })
+
+    const width = Math.floor(container.offsetWidth);
+    const nbr = Math.floor(width / 350);
+    const margin = (nbr - 1) * 40 / nbr;
+    const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            if (data) {
+                nfts = nfts.concat(data.assets);
+                if (loading) {
+                    loading.remove();
+                    container.appendChild(list);
+                }
+                listRender(data);
+            }
+        })
+    }
+
+    const lazyLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const img = element.target;
+                img.src = img.dataset.src || img.src;
+                img.classList.remove("lazy-loading");
+                lazyLoading.unobserve(img);
+            }
+        });
+    });
+
+    const listRender = (nftList) => {
+        console.log(nftList);
+        if (!nfts.length) {
+            container.replaceChildren('null')
+        }
+        //For each NFTS
+        nftList.assets.forEach(nft => {
+            
+            if (nft.image_url) {
+                
+                const nftElement = createElement('div', {
+                    className: "column",
+                    attributes: [{
+                        key: "style", value: `width:${columnSize}px`
+                    }]
+                }, list)
+                //Create Img with lazyLoading
+                const imgContainer = createElement('div', {
+                    attributes: [{
+                        key: "style",
+                        value: `height:${columnSize}px`
+                    }],
+                    className: "crop"
+                }, nftElement)
+                const imgCenter = createElement('div', {
+                    className: "img-center",
+                }, imgContainer)
+                const img = createImg(nft.image_url, imgCenter);
+                img.addEventListener('click', (e) => {
+                    link({ to: '/nft/' + nft.id });
+                })
+                const name = createElement('p', {
+                    className: "",
+                    text: nft.name
+                }, nftElement)
+
+                const likeButton = createElement('div', {
+                    className: "extra content",
+                    text: `<a><i class="heart icon"></i>favoris</a>`
+                }, nftElement);
+                likeButton.addEventListener("click", () => addFeature(nft));
+                //Observe with scroll
+                lazyLoading.observe(img);
+            }
+        })
+        if (nftList.next) {
+            separate.setAttribute("data-url", nftList.next)
+            preLoading.observe(separate);
+        }
+    }
+    headerComponent({});
+    execute({ url: rootUrl + "/collections/" + slug })
+
+}
+
 function collections() {
 
     //Const & let
@@ -553,6 +662,10 @@ function collections() {
                     className: "heart icon"
                 }, aicon)
                 const img = createImg(nft.image_url, imgCenter);
+                img.addEventListener('click', (e) => {
+                    link({ to: '/collections/' + nft.slug });
+                })
+                
                 const name = createElement('p', {
                     className: "",
                     text: nft.name
