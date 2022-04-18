@@ -36,7 +36,10 @@ main .container {
   width: 95%;
   margin: 0 auto;
 }
-
+.imgLike{
+  background-color: blue;
+  width: 20px;
+}
 main .grid {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -89,6 +92,7 @@ main .grid .column {
 .crop .img-center {
   z-index: 1;
   width: 100%;
+  cursor: pointer;
 }
 
 .crop img {
