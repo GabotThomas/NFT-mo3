@@ -78,6 +78,34 @@ function creatorSelect({ parent, handleSelect }) {
     return creatorForm;
 }
 
+// Problème au niveau API
+function ownerSelect({ parent, handleSelect }) {
+    const url = 'https://awesome-nft-app.herokuapp.com/owners';
+
+    const ownerForm = createElement('select', {
+        className: "form",
+    }, parent);
+    ownerForm.addEventListener("input", (e) => {
+        handleSelect('/owners/' + e.target.value)
+    })
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            console.log(data)
+            data.owners.forEach(owners => {
+                // console.log(owners.username)
+                if (owners.username && owners.username != 'NullAddress') {
+                    const optionOwner = createElement('option', {
+                        className: "select",
+                        text: owners.username
+                    }, ownerForm);
+                }
+            })
+        })
+    }
+    execute({ url });
+}
+
 function searchNft({ parent, handleSearch }) {
     const searchForm = createElement('input', {
         className: "form",
@@ -221,6 +249,11 @@ function assets() {
         component: searchContainer
     })
     creatorSelect({
+        parent: searchContainer,
+        handleSelect: handleForm
+    });
+
+    ownerSelect({
         parent: searchContainer,
         handleSelect: handleForm
     });
