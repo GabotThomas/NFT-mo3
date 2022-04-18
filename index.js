@@ -189,7 +189,7 @@ function assets() {
                 const section = element.target;
                 if (!search) {
                     execute({
-                        url: rootUrl + '/?page' + section.getAttribute("data-url"),
+                        url: rootUrl + '/?page=' + section.getAttribute("data-url"),
                     });
                 }
             }
