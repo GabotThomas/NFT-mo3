@@ -13,7 +13,8 @@ let nftRoute = [
 let routes = [
     route({ url: '/', component: assets }),
     route({ url: '/nft', component: routing, routes: nftRoute }),
-    route({ url: '/favoris', component: favoris })
+    route({ url: '/favoris', component: favoris }),
+    route({ url: '/collections', component: collections })
 ]
 index();
 
@@ -47,6 +48,7 @@ function headerComponent({ component = null }) {
 
     createLi('/', ul, 'Home');
     createLi('/favoris', ul, 'Favoris');
+    createLi('/collections', ul, 'Collections');
 
     headerComponents.replaceChildren(component || '');
 
@@ -461,6 +463,115 @@ function favoris() {
     }
     headerComponent({});
     listRender(localStorage.getItem('favoris'));
+}
+
+function collections() {
+
+    //Const & let
+    const rootUrl = 'https://awesome-nft-app.herokuapp.com/collections';
+    let nfts = [];
+
+    //Components
+    const container = createElement('div', { className: "container list" }, main, true)
+    const loading = createElement('div', { className: "ui loader active" }, container, true);
+    const list = createElement('div', { className: 'grid' })
+    const separate = createElement('div', { className: "separate" })
+
+    const width = Math.floor(container.offsetWidth);
+    const nbr = Math.floor(width / 350);
+    const margin = (nbr - 1) * 40 / nbr;
+    const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            console.log(data)
+            if (data) {
+                console.log(data);
+                nfts = nfts.concat(data.collections);
+                if (loading) {
+                    loading.remove();
+                    container.appendChild(list);
+                    container.appendChild(separate);
+                }
+                listRender(data);
+            }
+        })
+    }
+
+    const lazyLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const img = element.target;
+                img.src = img.dataset.src || img.src;
+                img.classList.remove("lazy-loading");
+                lazyLoading.unobserve(img);
+            }
+        });
+    });
+
+    const preLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const section = element.target;
+                execute({
+                    url: rootUrl + '/?page' + section.getAttribute("data-url"),
+                });
+            }
+        });
+    }, { rootMargin: "500px" });
+
+    const listRender = (nftList) => {
+        console.log(nftList)
+        //For each NFTS
+        nftList.collections.forEach(nft => {
+            if (nft.image_url) {
+                const nftElement = createElement('div', {
+                    className: "column ui card",
+                    attributes: [{
+                        key: "style", value: `width:${columnSize}px`
+                    }]
+                }, list)
+                //Create Img with lazyLoading
+                const imgContainer = createElement('div', {
+                    className: "image",
+                    attributes: [{
+                        key: "style",
+                        value: `height:${columnSize}px`
+                    }],
+                    className: "crop"
+                }, nftElement)
+                const imgCenter = createElement('div', {
+                    className: "img-center"
+                }, imgContainer)
+                const divicon = createElement('div', {
+                    className: "extra content"
+                }, nftElement)
+                const aicon = createElement('a', {
+                    text: "add favoris"
+                }, divicon)
+                const icon = createElement('i', {
+                    className: "heart icon"
+                }, aicon)
+                const img = createImg(nft.image_url, imgCenter);
+                const name = createElement('p', {
+                    className: "",
+                    text: nft.name
+                }, nftElement)
+                //Observe with scroll
+                lazyLoading.observe(img);
+            }
+        })
+        if (nftList.next) {
+            separate.setAttribute("data-url", nftList.next)
+            preLoading.observe(separate);
+        }
+
+    }
+
+    //Header 
+    headerComponent({})
+    execute({ url: rootUrl });
+
 }
 
 //Function create
