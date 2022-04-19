@@ -8,13 +8,13 @@ let historyPushAvailable = window.location.origin.slice(0, 4) != 'file';
 let nftRoute = [
     //: /nft
     route({ url: '/:id', component: asset })
-    
+
 ]
 
 let collectionRoute = [
     route({ url: '/', component: collections }),
     route({ url: '/:slug', component: collection })
-    
+
 ]
 
 
@@ -31,6 +31,7 @@ function index() {
     root.appendChild(main)
     //InitRouting
     let url = new URL(window.location.href);
+    //Link to link({ to: url.pathname }) if redirect serve
     link({ to: '/' });
 
 }
@@ -62,105 +63,11 @@ function headerComponent({ component = null }) {
 
 }
 
-function creatorSelect({ parent, handleSelect }) {
-    const url = 'https://awesome-nft-app.herokuapp.com/creators';
-
-    const div = createElement('div', {
-        className: "divheaderelement",
-    }, parent);
-    const labelsearch = createElement('label', {
-        text: "Créateur:",
-        className: "ui label",
-    }, div);
-    const creatorForm = createElement('select', {
-        className: "ui dropdown",
-    }, div);
-    creatorForm.addEventListener("input", (e) => {
-        handleSelect('/creators/' + e.target.value)
-    })
-
-    const execute = (request) => {
-        useFetch(request).then((data) => {
-            data.creators.forEach(creator => {
-                if (creator.username) {
-                    const optionCreator = createElement('option', {
-                        className: "select",
-                        text: creator.username
-                    }, creatorForm);
-                }
-            })
-        })
-    }
-    execute({ url });
-    return creatorForm;
-}
-
-// Problème au niveau API
-function ownerSelect({ parent, handleSelect }) {
-    const url = 'https://awesome-nft-app.herokuapp.com/owners';
-
-    const div = createElement('div', {
-        className: "divheaderelement",
-    }, parent);
-    const labelsearch = createElement('label', {
-        className: "ui label",
-        text: "Propriétaire:",
-    }, div);
-    const ownerForm = createElement('select', {
-        className: "ui dropdown",
-    }, div);
-    ownerForm.addEventListener("input", (e) => {
-        handleSelect('/owners/' + e.target.value)
-    })
-
-    const execute = (request) => {
-        useFetch(request).then((data) => {
-            console.log(data)
-            data.owners.forEach(owners => {
-                // console.log(owners.username)
-                if (owners.username && owners.username != 'NullAddress') {
-                    const optionOwner = createElement('option', {
-                        className: "select",
-                        text: owners.username
-                    }, ownerForm);
-                }
-            })
-        })
-    }
-    execute({ url });
-}
-
-function searchNft({ parent, handleSearch }) {
-    const div = createElement('div', {
-        className: "divheaderelement",
-    }, parent);
-    const labelsearch = createElement('label', {
-        text: "Recherche par nft:",
-        className: "ui label",
-    }, div);
-    const divsearch = createElement('div', {
-        className: "ui search",
-    }, div);
-    const divIconinput = createElement('div', {
-        className: "ui icon input nftinput",
-    }, divsearch);
-    const searchForm = createElement('input', {
-        className: "prompt",
-    }, divIconinput);
-    const iconForm = createElement('i', {
-        className: "search icon",
-    }, divIconinput);
-    searchForm.addEventListener("input", (e) => {
-        handleSearch('/search?q=' + e.target.value)
-    })
-    return divsearch;
-}
-
 function assets() {
-
     //Const & let
     const rootUrl = 'https://awesome-nft-app.herokuapp.com';
     let search = false;
+    let sales = null;
     let nfts = [];
 
     //Elements
@@ -183,7 +90,15 @@ function assets() {
         handleLoading();
         search = true;
         execute({
-            url: rootUrl + pathname,
+            url: concatString(rootUrl, pathname),
+        }, true);
+    }
+
+    const handleSales = (pathname) => {
+        handleLoading();
+        sales = true;
+        execute({
+            url: concatString(rootUrl, pathname),
         }, true);
     }
 
@@ -202,7 +117,6 @@ function assets() {
                         if (search && !data.assets.length) {
                             nfts = []
                         }
-
                     }
                     container.appendChild(list);
                     container.appendChild(separate);
@@ -229,7 +143,14 @@ function assets() {
                 const section = element.target;
                 if (!search) {
                     execute({
-                        url: rootUrl + '/?page=' + section.getAttribute("data-url"),
+                        url:
+                            concatString(
+                                rootUrl,
+                                '/?page=',
+                                section.getAttribute("data-url"),
+                                (sales ? '&sales=true' : '')
+                            )
+                        ,
                     });
                 }
             }
@@ -262,11 +183,15 @@ function assets() {
                 }, imgContainer)
                 const img = createImg(nft.image_url, imgCenter);
                 img.addEventListener('click', (e) => {
-                    link({ to: '/nft/' + nft.id });
+                    link({ to: concatString('/nft/', nft.id) });
                 })
                 const name = createElement('p', {
                     className: "nftname",
                     text: nft.name
+                }, nftElement)
+                const sales = createElement('p', {
+                    className: "",
+                    text: nft.sales
                 }, nftElement)
 
                 const likeButton = createElement('div', {
@@ -303,15 +228,18 @@ function assets() {
         handleSearch: handleForm
     });
 
+    salesSelect({
+        parent: searchContainer,
+        handleClick: handleSales
+    })
+
     //Components
     handleLoading();
     execute({ url: rootUrl });
 }
 
 function asset({ id }) {
-    // console.log(id)
     const rootUrl = 'https://awesome-nft-app.herokuapp.com';
-    //history.pushState({}, null, "nft/" + id)
     let nfts = [];
 
     //Components
@@ -379,6 +307,7 @@ function asset({ id }) {
             // }, nftElement)
             const divcontent = createElement('div', {
                 className: "content",
+                text: concatString("<span>NFT name: </span>", nft.name)
             }, nftElement)
             const name = createElement('p', {
                 className: "header",
@@ -405,7 +334,7 @@ function asset({ id }) {
         }
     }
     headerComponent({});
-    execute({ url: rootUrl + "/nft/" + id })
+    execute({ url: concatString(rootUrl, "/nft/", id) })
 
 }
 
@@ -564,9 +493,9 @@ function collection({ slug }) {
         }
         //For each NFTS
         nftList.assets.forEach(nft => {
-            
+
             if (nft.image_url) {
-                
+
                 const nftElement = createElement('div', {
                     className: "cardcolumn fondcard",
                     attributes: [{
@@ -693,7 +622,7 @@ function collections() {
                 img.addEventListener('click', (e) => {
                     link({ to: '/collections/' + nft.slug });
                 })
-                
+
                 const name = createElement('p', {
                     className: "nftname",
                     text: nft.name
@@ -715,8 +644,139 @@ function collections() {
 
 }
 
-//Function create
+//Sub-component
+function headerComponent({ component = null }) {
+    //Navbar
+    const nav = createElement('div', {
+        className: 'navbar',
+        attributes: [{
+            key: "style",
+            value: "height:100px; width:100%"
+        }]
+    }, header, true)
+    const ul = createElement('ul', {
+        className: 'nav-list',
+        attributes: ''
+    }, nav)
+    const headerComponents = createElement('div', {
+        className: 'nav-components',
+    }, header)
 
+    createLi('/', ul, 'Home');
+    createLi('/favoris', ul, 'Favoris');
+    createLi('/collections', ul, 'Collections');
+
+    headerComponents.replaceChildren(component || '');
+
+}
+
+function creatorSelect({ parent, handleSelect }) {
+    const url = 'https://awesome-nft-app.herokuapp.com/creators';
+
+    const div = createElement('div', {
+        className: "divheaderelement",
+    }, parent);
+    const labelsearch = createElement('label', {
+        text: "Créateur:",
+        className: "ui label",
+    }, div);
+    const creatorForm = createElement('select', {
+        className: "ui dropdown",
+    }, div);
+    creatorForm.addEventListener("input", (e) => {
+        handleSelect('/creators/' + e.target.value)
+    })
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            data.creators.forEach(creator => {
+                if (creator.username) {
+                    const optionCreator = createElement('option', {
+                        className: "select",
+                        text: creator.username
+                    }, creatorForm);
+                }
+            })
+        })
+    }
+    execute({ url });
+    return creatorForm;
+}
+
+function salesSelect({ parent, handleClick }) {
+    const url = 'https://awesome-nft-app.herokuapp.com/';
+
+    const sales = createElement('button', {
+        className: 'sales',
+        text: 'sales'
+    }, parent)
+    sales.addEventListener('click', (e) => {
+        handleClick('?sales=true')
+    })
+
+    return sales;
+}
+
+// Problème au niveau API
+function ownerSelect({ parent, handleSelect }) {
+    const url = 'https://awesome-nft-app.herokuapp.com/owners';
+
+    const div = createElement('div', {
+        className: "divheaderelement",
+    }, parent);
+    const labelsearch = createElement('label', {
+        className: "ui label",
+        text: "Propriétaire:",
+    }, div);
+    const ownerForm = createElement('select', {
+        className: "ui dropdown",
+    }, div);
+    ownerForm.addEventListener("input", (e) => {
+        handleSelect(concatString('/owners/', e.target.value))
+    })
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            data.owners.forEach(owners => {
+                if (owners.username && owners.username != 'NullAddress') {
+                    const optionOwner = createElement('option', {
+                        className: "select",
+                        text: owners.username
+                    }, ownerForm);
+                }
+            })
+        })
+    }
+    execute({ url });
+}
+
+function searchNft({ parent, handleSearch }) {
+    const div = createElement('div', {
+        className: "divheaderelement",
+    }, parent);
+    const labelsearch = createElement('label', {
+        text: "Recherche par nft:",
+        className: "ui label",
+    }, div);
+    const divsearch = createElement('div', {
+        className: "ui search",
+    }, div);
+    const divIconinput = createElement('div', {
+        className: "ui icon input nftinput",
+    }, divsearch);
+    const searchForm = createElement('input', {
+        className: "prompt",
+    }, divIconinput);
+    const iconForm = createElement('i', {
+        className: "search icon",
+    }, divIconinput);
+    searchForm.addEventListener("input", (e) => {
+        handleSearch(concatString('/search?q=', e.target.value))
+    })
+    return searchForm;
+}
+
+//Function create
 function createElement(tag, config, parent = null, replace = false) {
     const { text, color, className, attributes } = config || {};
 
@@ -774,8 +834,14 @@ function createLi(to, parent, text) {
     return Li;
 }
 
-//Function fetch API
+//Function
+function concatString(...arrayString) {
+    return arrayString.reduce((accuString, string) => {
+        return accuString = accuString.concat(string)
+    }, '')
+}
 
+//Function fetch API
 async function useFetch({
     url,
     method = 'GET',
@@ -831,7 +897,6 @@ function removeFeature(index) {
 }
 
 //Routing
-
 function link({ to }) {
     routing({ pathnameGiven: to })
 }
@@ -883,9 +948,9 @@ function routing({ pathnameGiven, declaredRoutes = routes, prevUrl = null }) {
                     insert = !insert;
                 }
                 if (index === 0) {
-                    matricePathname.push([insert ? ('/' + pathname) : '/&'])
+                    matricePathname.push([insert ? concatString('/', pathname) : '/&'])
                 } else {
-                    matricePathname[j].push('/' + (insert ? pathname : '&'));
+                    matricePathname[j].push(concatString('/', (insert ? pathname : '&')));
                 }
             }
             matriceIndex = matriceIndex / 2
@@ -907,8 +972,8 @@ function routing({ pathnameGiven, declaredRoutes = routes, prevUrl = null }) {
             //compare universal '/nft/&/details', path => line in matrice
             if (universalRoute == pathname.slice(0, declaredRouteSplit.length - 1).join('')) {
                 //recover the rest of the url for multi-routing
-                props.nextPathname = '/' +
-                    pathnameSplit.slice(declaredRouteSplit.length - 1).join('/');
+                props.nextPathname = concatString('/',
+                    pathnameSplit.slice(declaredRouteSplit.length - 1).join('/'));
                 pathname.forEach((el, i) => {
                     //if variable in URL
                     if (el == '/&') {
