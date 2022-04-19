@@ -765,7 +765,7 @@ function createImg(url, parent, props = {}) {
 
 function createLi(to, parent, text) {
     const Li = createElement('li', {
-        className: 'nav-text',
+        className: 'nav-text barnav',
         text
     }, parent)
     Li.addEventListener('click', (e) => {

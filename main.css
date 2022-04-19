@@ -38,6 +38,14 @@ body {
   flex-direction: column;
 }
 
+.barnav {
+  cursor: pointer;
+}
+
+.barnav:hover {
+  color: teal;
+}
+
 .flexid {
   display: -webkit-box;
   display: -ms-flexbox;
