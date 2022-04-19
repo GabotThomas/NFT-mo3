@@ -65,9 +65,16 @@ function headerComponent({ component = null }) {
 function creatorSelect({ parent, handleSelect }) {
     const url = 'https://awesome-nft-app.herokuapp.com/creators';
 
-    const creatorForm = createElement('select', {
-        className: "form",
+    const div = createElement('div', {
+        className: "divheaderelement",
     }, parent);
+    const labelsearch = createElement('label', {
+        text: "Créateur:",
+        className: "ui label",
+    }, div);
+    const creatorForm = createElement('select', {
+        className: "ui dropdown",
+    }, div);
     creatorForm.addEventListener("input", (e) => {
         handleSelect('/creators/' + e.target.value)
     })
@@ -92,9 +99,16 @@ function creatorSelect({ parent, handleSelect }) {
 function ownerSelect({ parent, handleSelect }) {
     const url = 'https://awesome-nft-app.herokuapp.com/owners';
 
-    const ownerForm = createElement('select', {
-        className: "form",
+    const div = createElement('div', {
+        className: "divheaderelement",
     }, parent);
+    const labelsearch = createElement('label', {
+        className: "ui label",
+        text: "Propriétaire:",
+    }, div);
+    const ownerForm = createElement('select', {
+        className: "ui dropdown",
+    }, div);
     ownerForm.addEventListener("input", (e) => {
         handleSelect('/owners/' + e.target.value)
     })
@@ -117,13 +131,29 @@ function ownerSelect({ parent, handleSelect }) {
 }
 
 function searchNft({ parent, handleSearch }) {
-    const searchForm = createElement('input', {
-        className: "form",
+    const div = createElement('div', {
+        className: "divheaderelement",
     }, parent);
+    const labelsearch = createElement('label', {
+        text: "Recherche par nft:",
+        className: "ui label",
+    }, div);
+    const divsearch = createElement('div', {
+        className: "ui search",
+    }, div);
+    const divIconinput = createElement('div', {
+        className: "ui icon input nftinput",
+    }, divsearch);
+    const searchForm = createElement('input', {
+        className: "prompt",
+    }, divIconinput);
+    const iconForm = createElement('i', {
+        className: "search icon",
+    }, divIconinput);
     searchForm.addEventListener("input", (e) => {
         handleSearch('/search?q=' + e.target.value)
     })
-    return searchForm;
+    return divsearch;
 }
 
 function assets() {
@@ -139,7 +169,7 @@ function assets() {
     const list = createElement('div', { className: 'grid' })
     const separate = createElement('div', { className: "separate" })
     const searchContainer = createElement('div', {
-        className: 'form-container'
+        className: 'trisearch'
     });
 
     //With of card
@@ -241,7 +271,7 @@ function assets() {
 
                 const likeButton = createElement('div', {
                     className: "extra content",
-                    text: `<a><i class="heart icon"></i>favoris</a>`
+                    text: `<a class="addfav"></i>Ajouter aux favoris <i class="heart icon"></a>`
                 }, nftElement);
                 likeButton.addEventListener("click", () => addFeature(nft));
                 //Observe with scroll
