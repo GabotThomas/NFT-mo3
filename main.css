@@ -1,7 +1,11 @@
 html {
   scroll-behavior: smooth;
+  
 }
 
+body {
+  background-color: #FCFBFD;
+}
 .trisearch {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -17,17 +21,64 @@ html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  
+}
+
+.cardcolumn{
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardcolumnid{
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+}
+
+.flexid {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: center;
+}
+.contratadress {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 200px;
+    display: block;
+    overflow: hidden;
+}
+.divfav {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 .addfav {
   cursor: pointer;
 }
 
-.addfav:hover {
+
+.addfav {
+  color: teal;
+}
+
+.deletefav {
   color: red;
 }
 
-
+.addfav:hover {
+  color: red;
+}
+.nftname {
+  padding-left: 10px;
+  font-weight: 700;
+}
+.fondcard {
+  background-color: white;border-radius: 20px;
+}
 img {
   width: 100%;
   -webkit-transition: -webkit-filter 0.5s;
@@ -94,7 +145,7 @@ main .grid .column {
   width: 100%;
   overflow: hidden;
   text-align: center;
-  background-color: #c6c6c6;
+  background-color: white;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
