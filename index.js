@@ -78,6 +78,19 @@ function assets() {
     const searchContainer = createElement('div', {
         className: 'trisearch'
     });
+    const topButton = createElement('button', {
+        className: "btn btn-top",
+        attributes: [{
+            text: "top",
+            key: "style", value: "position: fixed; bottom: 10px; right: 10px; height: 50px; width: 50px; z-index: 100; border-radius: 10px; border: none"
+        }]
+    }, main)
+    const top = createElement("a", {
+        text: "Top",
+        attributes: [{
+            key: "href", value: "#top"
+        }]
+    }, topButton)
 
     //With of card
     const width = Math.floor(container.offsetWidth);
@@ -693,7 +706,10 @@ function headerComponent({ component = null }) {
     }, header, true)
     const ul = createElement('ul', {
         className: 'nav-list',
-        attributes: ''
+        id: "top",
+        attributes: [{
+            key: "id", value: "top"
+        }]
     }, nav)
     const headerComponents = createElement('div', {
         className: 'nav-components',
