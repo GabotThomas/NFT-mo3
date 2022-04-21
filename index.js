@@ -4,6 +4,8 @@ const header = createElement('header', { className: "header" }, root);
 const main = createElement('main', { className: "container" });
 let historyPushAvailable = window.location.origin.slice(0, 4) != 'file';
 
+const historyPage = ['/']
+
 //Routing
 let nftRoute = [
     //: /nft
@@ -204,11 +206,12 @@ function assets() {
                 }, hiddencontent)
                 const creator = createElement('p', {
                     className: "",
-                    text: `par <a href="">${nft.collection.name}</a>`
+                    text: `par <div>${nft.collection.name}</div>`
                 }, hiddencontent)
                 const description = createElement('p', {
                     className: "",
-                    text: `Description de la Collection:<br><p>${nft.collection.description}</p>`
+                    text: `Description de la Collection:<br><p>${ellipsis(nft.collection.description, 200)
+                        }</p>`
                 }, hiddencontent)
                 const contractAdress = createElement('p', {
                     className: "",
@@ -242,10 +245,10 @@ function assets() {
                 details.addEventListener('click', (e) => {
                     link({ to: concatString('/nft/', nft.id) });
                 })
-                
+
                 const likeButton = createElement('div', {
                     className: "extra content divfav",
-                    text: `<a class="addfav"></i>Ajouter aux favoris <i class="heart icon"></a>`
+                    text: `<div class="addfav"></i>Ajouter aux favoris <i class="heart icon"></div>`
                 }, divdetailfav);
                 likeButton.addEventListener("click", () => addFeature(nft));
                 //Observe with scroll
@@ -257,6 +260,13 @@ function assets() {
             separate.setAttribute("data-url", nftList.next)
             preLoading.observe(separate);
         }
+    }
+
+    function ellipsis(string, size) {
+        if (string.length > size) {
+            return concatString(string.slice(0, size), '...')
+        }
+        return string;
     }
 
     //Header 
@@ -298,7 +308,7 @@ function asset({ id }) {
     const item = createElement('div', { className: 'flexid' })
     const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
     back.addEventListener('click', () => {
-        link({ to: '/' });
+        link({ to: historyPage[0] });
     })
 
     const width = Math.floor(container.offsetWidth);
@@ -365,7 +375,7 @@ function asset({ id }) {
             }, divcontent)
             const creator = createElement('p', {
                 className: "meta",
-                text: `par <a href="">${nft.collection.name}</a>`
+                text: `par <div>${nft.collection.name}</div>`
             }, divcontent)
             const description = createElement('p', {
                 className: "description",
@@ -398,6 +408,10 @@ function favoris() {
     const loading = createElement('div', { className: "ui loader active" }, container, true);
     const list = createElement('div', { className: 'grid' })
     const separate = createElement('div', { className: "separate" })
+    const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
+    back.addEventListener('click', () => {
+        link({ to: historyPage[0] });
+    })
 
     const width = Math.floor(container.offsetWidth);
     const nbr = Math.floor(width / 350);
@@ -469,17 +483,19 @@ function favoris() {
                     }, divcontent)
                     const creator = createElement('p', {
                         className: "meta",
-                        text: `par <a href="">${nft.collection.name}</a>`
+                        text: `par <div>${nft.collection.name}</div>`
                     }, divcontent);
                     const likeButton = createElement('div', {
                         className: "divfav",
-                        text: `<a class="deletefav"></i>Retirer des favoris <i class="heart icon"></a>`
+                        text: `<div class="deletefav pointer"></i>Retirer des favoris <i class="heart icon"></div>`
                     }, nftElement);
                     likeButton.addEventListener("click", (e) => {
                         nftElement.remove();
                         removeFeature(index);
                     });
-
+                    nftElement.addEventListener('click', (e) => {
+                        link({ to: concatString('/nft/', nft.id) });
+                    })
                     //Observe with scroll
                     lazyLoading.observe(img);
                 }
@@ -491,7 +507,6 @@ function favoris() {
 }
 
 function collection({ slug }) {
-    // console.log(id)
     const rootUrl = 'https://awesome-nft-app.herokuapp.com';
     //history.pushState({}, null, "nft/" + id)
     let nfts = [];
@@ -504,7 +519,7 @@ function collection({ slug }) {
     const item = createElement('div', { className: 'flex' })
     const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
     back.addEventListener('click', () => {
-        link({ to: '/collections' });
+        link({ to: historyPage[0] });
     })
 
     const width = Math.floor(container.offsetWidth);
@@ -537,7 +552,6 @@ function collection({ slug }) {
     });
 
     const listRender = (nftList) => {
-        console.log(nftList);
         if (!nfts.length) {
             container.replaceChildren('null')
         }
@@ -565,7 +579,7 @@ function collection({ slug }) {
                 }, imgContainer)
                 const img = createImg(nft.image_url, imgCenter);
                 img.addEventListener('click', (e) => {
-                    link({ to: '/nft/' + nft.id });
+                    link({ to: concatString('/nft/', nft.id) });
                 })
                 const name = createElement('p', {
                     className: "nftname",
@@ -574,7 +588,7 @@ function collection({ slug }) {
 
                 const likeButton = createElement('div', {
                     className: "extra content divfav",
-                    text: `<a class="addfav"></i>Ajouter aux favoris <i class="heart icon"></a>`
+                    text: `<div class="addfav"></i>Ajouter aux favoris <i class="heart icon"></div>`
                 }, nftElement);
                 likeButton.addEventListener("click", () => addFeature(nft));
                 //Observe with scroll
@@ -587,7 +601,7 @@ function collection({ slug }) {
         }
     }
     headerComponent({});
-    execute({ url: rootUrl + "/collections/" + slug })
+    execute({ url: concatString(rootUrl, "/collections/", slug) })
 
 }
 
@@ -602,6 +616,10 @@ function collections() {
     const loading = createElement('div', { className: "ui loader active" }, container, true);
     const list = createElement('div', { className: 'grid' })
     const separate = createElement('div', { className: "separate" })
+    const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
+    back.addEventListener('click', () => {
+        link({ to: historyPage[0] });
+    })
 
     const width = Math.floor(container.offsetWidth);
     const nbr = Math.floor(width / 350);
@@ -610,9 +628,7 @@ function collections() {
 
     const execute = (request) => {
         useFetch(request).then((data) => {
-            console.log(data)
             if (data) {
-                console.log(data);
                 nfts = nfts.concat(data.collections);
                 if (loading) {
                     loading.remove();
@@ -640,14 +656,13 @@ function collections() {
             if (element.isIntersecting) {
                 const section = element.target;
                 execute({
-                    url: rootUrl + '/?page' + section.getAttribute("data-url"),
+                    url: concatString(rootUrl, '/?page', section.getAttribute("data-url")),
                 });
             }
         });
     }, { rootMargin: "500px" });
 
     const listRender = (nftList) => {
-        console.log(nftList)
         //For each NFTS
         nftList.collections.forEach(nft => {
             if (nft.image_url) {
@@ -670,7 +685,7 @@ function collections() {
                 }, imgContainer)
                 const img = createImg(nft.image_url, imgCenter);
                 img.addEventListener('click', (e) => {
-                    link({ to: '/collections/' + nft.slug });
+                    link({ to: concatString('/collections/', nft.slug) });
                 })
 
                 const name = createElement('p', {
@@ -737,7 +752,7 @@ function creatorSelect({ parent, handleSelect }) {
         className: "ui dropdown",
     }, div);
     creatorForm.addEventListener("input", (e) => {
-        handleSelect('/creators/' + e.target.value)
+        handleSelect(concatString('/creators/', e.target.value))
     })
 
     const execute = (request) => {
@@ -938,8 +953,6 @@ function addFeature(nft) {
     } else {
         localStorage.setItem('favoris', JSON.stringify([nft]));
     }
-
-    alert("image ajoutée aux favoris");
 }
 
 function removeFeature(index) {
@@ -964,8 +977,13 @@ function route({ url, component, routes = null }) {
     }
     return {
         url, action: ({ pathname, ...props }) => {
+            let url = new URL(window.location.href);
+            historyPage.unshift(url.pathname)
             if (historyPushAvailable) {
-                history.pushState({}, null, pathname)
+                if (pathname[0] != '/') {
+                    pathname = concatString('/', pathname);
+                }
+                window.history.pushState({}, null, pathname)
             }
             component({ ...props });
         }
