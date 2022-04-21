@@ -5,6 +5,9 @@ html {
 body {
   background-color: #fcfbfd;
 }
+.pointer{
+  cursor: pointer;
+}
 
 .trisearch {
   display: -webkit-box;
