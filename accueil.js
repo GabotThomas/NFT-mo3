@@ -36,7 +36,7 @@ function createElement(tag, config, parent = null, replace = false) {
 const div = createElement('div', { className: 'container_accueil' }, document.body);
 const link = createElement('a', {  attributes: [{key: "href",value: 'index.html '}], }, div);
 const h1 = createElement('H1', { className: 'title_accueil', text : 'Infinity NFT' }, link);
-document.body.style.backgroundImage= "url('assets/fond_accueil/img3.jpg')";
+document.body.style.backgroundImage= "url('assets/img3.jpg')";
 function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 }
