@@ -170,37 +170,74 @@ function assets() {
                         key: "style", value: `width:${columnSize}px`
                     }]
                 }, list)
-                //Create Img with lazyLoading
                 const imgContainer = createElement('div', {
                     attributes: [{
                         key: "style",
                         value: `height:${columnSize}px`
                     }],
-                    className: "crop"
+                    className: "crop ui move reveal"
                 }, nftElement)
                 const imgCenter = createElement('div', {
-                    className: "img-center",
+                    className: "img-center visible content",
                 }, imgContainer)
                 const img = createImg(nft.image_url, imgCenter);
-                img.addEventListener('click', (e) => {
-                    link({ to: concatString('/nft/', nft.id) });
-                })
+                //HIDDEN
+                const hiddencontent = createElement('div', {
+                    className: "hidden content",
+                }, imgContainer)
+                const divcontent = createElement('div', {
+                    className: "",
+                    text: concatString("<span>NFT name: </span>", nft.name)
+                }, hiddencontent)
+                const creator = createElement('p', {
+                    className: "",
+                    text: `par <a href="">${nft.collection.name}</a>`
+                }, hiddencontent)
+                const description = createElement('p', {
+                    className: "",
+                    text: `Description de la Collection:<br><p>${nft.collection.description}</p>`
+                }, hiddencontent)
+                const contractAdress = createElement('p', {
+                    className: "",
+                    text: `Contrat adress <p>${nft.contract.address}</p>`
+                }, hiddencontent)
+
                 const name = createElement('p', {
                     className: "nftname",
                     text: nft.name
                 }, nftElement)
-                const sales = createElement('p', {
-                    className: "",
-                    text: nft.sales
+                const divsales = createElement('div', {
+                    className: "ui labeled button",
                 }, nftElement)
-
+                const divsales2 = createElement('div', {
+                    className: "ui basic teal button buttonshop",
+                }, divsales)
+                const salesi = createElement('i', {
+                    className: "shop icon",
+                }, divsales2)
+                const sales = createElement('p', {
+                    className: "ui basic left pointing teal label",
+                    text: nft.sales
+                }, divsales)
+                const divdetailfav = createElement('div', {
+                    className: "divfav",
+                }, nftElement);
+                const details = createElement('button', {
+                    className: "ui blue button detailbutton",
+                    text: "Détails"
+                }, divdetailfav)
+                details.addEventListener('click', (e) => {
+                    link({ to: concatString('/nft/', nft.id) });
+                })
+                
                 const likeButton = createElement('div', {
                     className: "extra content divfav",
                     text: `<a class="addfav"></i>Ajouter aux favoris <i class="heart icon"></a>`
-                }, nftElement);
+                }, divdetailfav);
                 likeButton.addEventListener("click", () => addFeature(nft));
                 //Observe with scroll
                 lazyLoading.observe(img);
+
             }
         })
         if (nftList.next) {
@@ -246,7 +283,7 @@ function asset({ id }) {
     const container = createElement('div', { className: "container item" }, main, true)
     const loading = createElement('div', { className: "ui loader active" }, container, true);
     const item = createElement('div', { className: 'flexid' })
-    const back = createElement('div', { className: "back", text: 'back' }, container)
+    const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
     back.addEventListener('click', () => {
         link({ to: '/' });
     })
@@ -452,9 +489,9 @@ function collection({ slug }) {
     const list = createElement('div', { className: 'grid' })
     const separate = createElement('div', { className: "separate" })
     const item = createElement('div', { className: 'flex' })
-    const back = createElement('div', { className: "back", text: 'back' }, container)
+    const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
     back.addEventListener('click', () => {
-        link({ to: '/' });
+        link({ to: '/collections' });
     })
 
     const width = Math.floor(container.offsetWidth);
@@ -707,7 +744,7 @@ function salesSelect({ parent, handleClick }) {
     const url = 'https://awesome-nft-app.herokuapp.com/';
 
     const sales = createElement('button', {
-        className: 'sales',
+        className: 'sales ui teal button',
         text: 'sales'
     }, parent)
     sales.addEventListener('click', (e) => {
