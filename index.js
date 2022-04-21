@@ -8,13 +8,21 @@ let historyPushAvailable = window.location.origin.slice(0, 4) != 'file';
 let nftRoute = [
     //: /nft
     route({ url: '/:id', component: asset })
+
 ]
+
+let collectionRoute = [
+    route({ url: '/', component: collections }),
+    route({ url: '/:slug', component: collection })
+
+]
+
 
 let routes = [
     route({ url: '/', component: assets }),
     route({ url: '/nft', component: routing, routes: nftRoute }),
     route({ url: '/favoris', component: favoris }),
-    route({ url: '/collections', component: collections })
+    route({ url: '/collections', component: routing, routes: collectionRoute })
 ]
 index();
 
@@ -29,6 +37,32 @@ function index() {
 }
 
 //Component
+
+function headerComponent({ component = null }) {
+    //Navbar
+    const nav = createElement('div', {
+        className: 'navbar',
+        attributes: [{
+            key: "style",
+            value: "height:100px; width:100%"
+        }]
+    }, header, true)
+    const ul = createElement('ul', {
+        className: 'nav-list',
+        attributes: ''
+    }, nav)
+    const headerComponents = createElement('div', {
+        className: 'nav-components',
+    }, header)
+
+    createLi('/', ul, 'Home');
+    createLi('/favoris', ul, 'Favoris');
+    createLi('/collections', ul, 'Collections');
+
+    headerComponents.replaceChildren(component || '');
+
+}
+
 function assets() {
     //Const & let
     const rootUrl = 'https://awesome-nft-app.herokuapp.com';
@@ -42,7 +76,7 @@ function assets() {
     const list = createElement('div', { className: 'grid' })
     const separate = createElement('div', { className: "separate" })
     const searchContainer = createElement('div', {
-        className: 'form-container'
+        className: 'trisearch'
     });
     const topButton = createElement('button', {
         className: "btn btn-top",
@@ -144,42 +178,79 @@ function assets() {
         nftList.assets.forEach(nft => {
             if (nft.image_url) {
                 const nftElement = createElement('div', {
-                    className: "column",
+                    className: "cardcolumn fondcard",
                     attributes: [{
                         key: "style", value: `width:${columnSize}px`
                     }]
                 }, list)
-                //Create Img with lazyLoading
                 const imgContainer = createElement('div', {
                     attributes: [{
                         key: "style",
                         value: `height:${columnSize}px`
                     }],
-                    className: "crop"
+                    className: "crop ui move reveal"
                 }, nftElement)
                 const imgCenter = createElement('div', {
-                    className: "img-center",
+                    className: "img-center visible content",
                 }, imgContainer)
                 const img = createImg(nft.image_url, imgCenter);
-                img.addEventListener('click', (e) => {
-                    link({ to: concatString('/nft/', nft.id) });
-                })
-                const name = createElement('p', {
+                //HIDDEN
+                const hiddencontent = createElement('div', {
+                    className: "hidden content",
+                }, imgContainer)
+                const divcontent = createElement('div', {
                     className: "",
+                    text: concatString("<span>NFT name: </span>", nft.name)
+                }, hiddencontent)
+                const creator = createElement('p', {
+                    className: "",
+                    text: `par <a href="">${nft.collection.name}</a>`
+                }, hiddencontent)
+                const description = createElement('p', {
+                    className: "",
+                    text: `Description de la Collection:<br><p>${nft.collection.description}</p>`
+                }, hiddencontent)
+                const contractAdress = createElement('p', {
+                    className: "",
+                    text: `Contrat adress <p>${nft.contract.address}</p>`
+                }, hiddencontent)
+
+                const name = createElement('p', {
+                    className: "nftname",
                     text: nft.name
                 }, nftElement)
-                const sales = createElement('p', {
-                    className: "",
-                    text: nft.sales
+                const divsales = createElement('div', {
+                    className: "ui labeled button",
                 }, nftElement)
-
-                const likeButton = createElement('div', {
-                    className: "extra content",
-                    text: `<a><i class="heart icon"></i>favoris</a>`
+                const divsales2 = createElement('div', {
+                    className: "ui basic teal button buttonshop",
+                }, divsales)
+                const salesi = createElement('i', {
+                    className: "shop icon",
+                }, divsales2)
+                const sales = createElement('p', {
+                    className: "ui basic left pointing teal label",
+                    text: nft.sales
+                }, divsales)
+                const divdetailfav = createElement('div', {
+                    className: "divfav",
                 }, nftElement);
+                const details = createElement('button', {
+                    className: "ui blue button detailbutton",
+                    text: "Détails"
+                }, divdetailfav)
+                details.addEventListener('click', (e) => {
+                    link({ to: concatString('/nft/', nft.id) });
+                })
+                
+                const likeButton = createElement('div', {
+                    className: "extra content divfav",
+                    text: `<a class="addfav"></i>Ajouter aux favoris <i class="heart icon"></a>`
+                }, divdetailfav);
                 likeButton.addEventListener("click", () => addFeature(nft));
                 //Observe with scroll
                 lazyLoading.observe(img);
+
             }
         })
         if (nftList.next) {
@@ -224,8 +295,8 @@ function asset({ id }) {
     //Components
     const container = createElement('div', { className: "container item" }, main, true)
     const loading = createElement('div', { className: "ui loader active" }, container, true);
-    const item = createElement('div', { className: 'flex' })
-    const back = createElement('div', { className: "back", text: 'back' }, container)
+    const item = createElement('div', { className: 'flexid' })
+    const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
     back.addEventListener('click', () => {
         link({ to: '/' });
     })
@@ -264,7 +335,7 @@ function asset({ id }) {
         //For each NFTS
         if (nft) {
             const nftElement = createElement('div', {
-                className: "column",
+                className: "cardcolumnid fondcard ui card",
                 attributes: [{
                     key: "style", value: `width:${columnSize}px`
                 }]
@@ -281,26 +352,33 @@ function asset({ id }) {
                 className: "img-center"
             }, imgContainer)
             const img = createImg(nft.image_url, imgCenter);
-            const name = createElement('p', {
-                className: "",
+            // const divcard = createElement('div', {
+            //     className: "ui card",
+            // }, nftElement)
+            const divcontent = createElement('div', {
+                className: "content",
                 text: concatString("<span>NFT name: </span>", nft.name)
             }, nftElement)
+            const name = createElement('p', {
+                className: "header",
+                text: nft.name
+            }, divcontent)
             const creator = createElement('p', {
-                className: "",
+                className: "meta",
                 text: `par <a href="">${nft.collection.name}</a>`
-            }, nftElement)
+            }, divcontent)
             const description = createElement('p', {
-                className: "",
+                className: "description",
                 text: `Description de la Collection:<br><p>${nft.collection.description}</p>`
-            }, nftElement)
+            }, divcontent)
             const contractAdress = createElement('p', {
-                className: "",
+                className: "contratadress",
                 text: `Contrat adress <p>${nft.contract.address}</p>`
-            }, nftElement)
+            }, divcontent)
             const sales = createElement('p', {
                 className: "",
                 text: `Ventes : <p>${nft.sales}</p>`
-            }, nftElement)
+            }, divcontent)
             //Observe with scroll
             lazyLoading.observe(img);
         }
@@ -364,7 +442,7 @@ function favoris() {
             favoris.forEach((nft, index) => {
                 if (nft.image_url) {
                     const nftElement = createElement('div', {
-                        className: "column ui card",
+                        className: "cardcolumnid fondcard ui card",
                         attributes: [{
                             key: "style", value: `width:${columnSize}px`
                         }]
@@ -382,18 +460,20 @@ function favoris() {
                         className: "img-center"
                     }, imgContainer)
                     const img = createImg(nft.image_url, imgCenter);
+                    const divcontent = createElement('div', {
+                        className: "content",
+                    }, nftElement)
                     const name = createElement('p', {
-                        className: "",
+                        className: "header",
                         text: nft.name
-                    }, nftElement)
+                    }, divcontent)
                     const creator = createElement('p', {
-                        className: "",
-                        text: `par <a href="">${nft.collection.slug}</a>`
-                    }, nftElement)
-                    const likeButton = createElement('img', {
-                        className: "imgLike",
-                        attributes: [{ key: 'src', value: 'assets/like.png', }]
-
+                        className: "meta",
+                        text: `par <a href="">${nft.collection.name}</a>`
+                    }, divcontent);
+                    const likeButton = createElement('div', {
+                        className: "divfav",
+                        text: `<a class="deletefav"></i>Retirer des favoris <i class="heart icon"></a>`
                     }, nftElement);
                     likeButton.addEventListener("click", (e) => {
                         nftElement.remove();
@@ -408,6 +488,107 @@ function favoris() {
     }
     headerComponent({});
     listRender(localStorage.getItem('favoris'));
+}
+
+function collection({ slug }) {
+    // console.log(id)
+    const rootUrl = 'https://awesome-nft-app.herokuapp.com';
+    //history.pushState({}, null, "nft/" + id)
+    let nfts = [];
+
+    //Components
+    const container = createElement('div', { className: "container list" }, main, true)
+    const loading = createElement('div', { className: "ui loader active" });
+    const list = createElement('div', { className: 'grid' })
+    const separate = createElement('div', { className: "separate" })
+    const item = createElement('div', { className: 'flex' })
+    const back = createElement('div', { className: "back ui teal button", text: 'back' }, container)
+    back.addEventListener('click', () => {
+        link({ to: '/collections' });
+    })
+
+    const width = Math.floor(container.offsetWidth);
+    const nbr = Math.floor(width / 350);
+    const margin = (nbr - 1) * 40 / nbr;
+    const columnSize = Math.floor((width / nbr) - 1 - margin);
+
+    const execute = (request) => {
+        useFetch(request).then((data) => {
+            if (data) {
+                nfts = nfts.concat(data.assets);
+                if (loading) {
+                    loading.remove();
+                    container.appendChild(list);
+                }
+                listRender(data);
+            }
+        })
+    }
+
+    const lazyLoading = new IntersectionObserver((elements) => {
+        elements.forEach((element) => {
+            if (element.isIntersecting) {
+                const img = element.target;
+                img.src = img.dataset.src || img.src;
+                img.classList.remove("lazy-loading");
+                lazyLoading.unobserve(img);
+            }
+        });
+    });
+
+    const listRender = (nftList) => {
+        console.log(nftList);
+        if (!nfts.length) {
+            container.replaceChildren('null')
+        }
+        //For each NFTS
+        nftList.assets.forEach(nft => {
+
+            if (nft.image_url) {
+
+                const nftElement = createElement('div', {
+                    className: "cardcolumn fondcard",
+                    attributes: [{
+                        key: "style", value: `width:${columnSize}px`
+                    }]
+                }, list)
+                //Create Img with lazyLoading
+                const imgContainer = createElement('div', {
+                    attributes: [{
+                        key: "style",
+                        value: `height:${columnSize}px`
+                    }],
+                    className: "crop"
+                }, nftElement)
+                const imgCenter = createElement('div', {
+                    className: "img-center",
+                }, imgContainer)
+                const img = createImg(nft.image_url, imgCenter);
+                img.addEventListener('click', (e) => {
+                    link({ to: '/nft/' + nft.id });
+                })
+                const name = createElement('p', {
+                    className: "nftname",
+                    text: nft.name
+                }, nftElement)
+
+                const likeButton = createElement('div', {
+                    className: "extra content divfav",
+                    text: `<a class="addfav"></i>Ajouter aux favoris <i class="heart icon"></a>`
+                }, nftElement);
+                likeButton.addEventListener("click", () => addFeature(nft));
+                //Observe with scroll
+                lazyLoading.observe(img);
+            }
+        })
+        if (nftList.next) {
+            separate.setAttribute("data-url", nftList.next)
+            preLoading.observe(separate);
+        }
+    }
+    headerComponent({});
+    execute({ url: rootUrl + "/collections/" + slug })
+
 }
 
 function collections() {
@@ -429,7 +610,9 @@ function collections() {
 
     const execute = (request) => {
         useFetch(request).then((data) => {
+            console.log(data)
             if (data) {
+                console.log(data);
                 nfts = nfts.concat(data.collections);
                 if (loading) {
                     loading.remove();
@@ -457,25 +640,25 @@ function collections() {
             if (element.isIntersecting) {
                 const section = element.target;
                 execute({
-                    url: concatString(rootUrl, '/?page', section.getAttribute("data-url")),
+                    url: rootUrl + '/?page' + section.getAttribute("data-url"),
                 });
             }
         });
     }, { rootMargin: "500px" });
 
     const listRender = (nftList) => {
+        console.log(nftList)
         //For each NFTS
         nftList.collections.forEach(nft => {
             if (nft.image_url) {
                 const nftElement = createElement('div', {
-                    className: "column ui card",
+                    className: "cardcolumn fondcard",
                     attributes: [{
                         key: "style", value: `width:${columnSize}px`
                     }]
                 }, list)
                 //Create Img with lazyLoading
                 const imgContainer = createElement('div', {
-                    className: "image",
                     attributes: [{
                         key: "style",
                         value: `height:${columnSize}px`
@@ -483,20 +666,15 @@ function collections() {
                     className: "crop"
                 }, nftElement)
                 const imgCenter = createElement('div', {
-                    className: "img-center"
+                    className: "img-center",
                 }, imgContainer)
-                const divicon = createElement('div', {
-                    className: "extra content"
-                }, nftElement)
-                const aicon = createElement('a', {
-                    text: "add favoris"
-                }, divicon)
-                const icon = createElement('i', {
-                    className: "heart icon"
-                }, aicon)
                 const img = createImg(nft.image_url, imgCenter);
+                img.addEventListener('click', (e) => {
+                    link({ to: '/collections/' + nft.slug });
+                })
+
                 const name = createElement('p', {
-                    className: "",
+                    className: "nftname",
                     text: nft.name
                 }, nftElement)
                 //Observe with scroll
@@ -548,11 +726,18 @@ function headerComponent({ component = null }) {
 function creatorSelect({ parent, handleSelect }) {
     const url = 'https://awesome-nft-app.herokuapp.com/creators';
 
-    const creatorForm = createElement('select', {
-        className: "form",
+    const div = createElement('div', {
+        className: "divheaderelement",
     }, parent);
+    const labelsearch = createElement('label', {
+        text: "Créateur:",
+        className: "ui label",
+    }, div);
+    const creatorForm = createElement('select', {
+        className: "ui dropdown",
+    }, div);
     creatorForm.addEventListener("input", (e) => {
-        handleSelect(concatString('/creators/', e.target.value))
+        handleSelect('/creators/' + e.target.value)
     })
 
     const execute = (request) => {
@@ -575,7 +760,7 @@ function salesSelect({ parent, handleClick }) {
     const url = 'https://awesome-nft-app.herokuapp.com/';
 
     const sales = createElement('button', {
-        className: 'sales',
+        className: 'sales ui teal button',
         text: 'sales'
     }, parent)
     sales.addEventListener('click', (e) => {
@@ -589,9 +774,16 @@ function salesSelect({ parent, handleClick }) {
 function ownerSelect({ parent, handleSelect }) {
     const url = 'https://awesome-nft-app.herokuapp.com/owners';
 
-    const ownerForm = createElement('select', {
-        className: "form",
+    const div = createElement('div', {
+        className: "divheaderelement",
     }, parent);
+    const labelsearch = createElement('label', {
+        className: "ui label",
+        text: "Propriétaire:",
+    }, div);
+    const ownerForm = createElement('select', {
+        className: "ui dropdown",
+    }, div);
     ownerForm.addEventListener("input", (e) => {
         handleSelect(concatString('/owners/', e.target.value))
     })
@@ -612,9 +804,25 @@ function ownerSelect({ parent, handleSelect }) {
 }
 
 function searchNft({ parent, handleSearch }) {
-    const searchForm = createElement('input', {
-        className: "form",
+    const div = createElement('div', {
+        className: "divheaderelement",
     }, parent);
+    const labelsearch = createElement('label', {
+        text: "Recherche par nft:",
+        className: "ui label",
+    }, div);
+    const divsearch = createElement('div', {
+        className: "ui search",
+    }, div);
+    const divIconinput = createElement('div', {
+        className: "ui icon input nftinput",
+    }, divsearch);
+    const searchForm = createElement('input', {
+        className: "prompt",
+    }, divIconinput);
+    const iconForm = createElement('i', {
+        className: "search icon",
+    }, divIconinput);
     searchForm.addEventListener("input", (e) => {
         handleSearch(concatString('/search?q=', e.target.value))
     })
@@ -670,7 +878,7 @@ function createImg(url, parent, props = {}) {
 
 function createLi(to, parent, text) {
     const Li = createElement('li', {
-        className: 'nav-text',
+        className: 'nav-text barnav',
         text
     }, parent)
     Li.addEventListener('click', (e) => {

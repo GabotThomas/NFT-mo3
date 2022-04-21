@@ -2,6 +2,116 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  background-color: #fcfbfd;
+}
+
+.trisearch {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media only screen and (max-width: 375px) {
+  .trisearch {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+}
+.divheaderelement {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cardcolumn {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardcolumnid {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+}
+
+.barnav {
+  cursor: pointer;
+}
+
+.barnav:hover {
+  color: teal;
+}
+
+.flexid {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: center;
+}
+.contratadress {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 200px;
+  display: block;
+  overflow: hidden;
+}
+.divfav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.addfav {
+  cursor: pointer;
+}
+
+.addfav {
+  color: teal;
+}
+
+.deletefav {
+  color: red;
+}
+
+.addfav:hover {
+  color: red;
+}
+
+.buttonshop {
+  padding-left: 10px;
+}
+.nftname {
+  padding-left: 10px;
+  font-weight: 700;
+}
+.fondcard {
+  background-color: white;
+  border-radius: 20px;
+}
+
+.detailbutton {
+  width: 100px;
+}
 img {
   width: 100%;
   -webkit-transition: -webkit-filter 0.5s;
@@ -14,7 +124,7 @@ img {
 
 img.lazy-loading {
   -webkit-filter: blur(40px);
-          filter: blur(40px);
+  filter: blur(40px);
 }
 
 .header {
@@ -36,7 +146,7 @@ main .container {
   width: 95%;
   margin: 0 auto;
 }
-.imgLike{
+.imgLike {
   background-color: blue;
   width: 20px;
 }
@@ -45,10 +155,10 @@ main .grid {
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-wrap: wrap;
   -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
   gap: 40px;
   overflow: hidden;
 }
@@ -59,8 +169,8 @@ main .grid .column {
   display: flex;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
 }
 
 .crop {
@@ -68,25 +178,25 @@ main .grid .column {
   width: 100%;
   overflow: hidden;
   text-align: center;
-  background-color: #c6c6c6;
+  background-color: white;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
   position: relative;
 }
 
 .crop:before {
-  content: '';
+  content: "";
   -webkit-filter: blur(40px);
-          filter: blur(40px);
+  filter: blur(40px);
   width: 100%;
   height: 100%;
   position: absolute;
   -webkit-backdrop-filter: blur(50px);
-          backdrop-filter: blur(50px);
+  backdrop-filter: blur(50px);
 }
 
 .crop .img-center {
@@ -97,6 +207,6 @@ main .grid .column {
 
 .crop img {
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 /*# sourceMappingURL=main.css.map */
