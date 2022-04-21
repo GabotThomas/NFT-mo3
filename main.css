@@ -99,4 +99,24 @@ main .grid .column {
   -o-object-fit: cover;
      object-fit: cover;
 }
+.container_accueil{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.container_accueil h1{
+  padding: 30px;
+  text-align: center;
+  font-family: fantasy;
+  font-size: xxx-large;
+  border: 10px solid;
+}
+.container_accueil :hover{
+ 
+  border-color: red;
+  color: red;
+}
 /*# sourceMappingURL=main.css.map */
